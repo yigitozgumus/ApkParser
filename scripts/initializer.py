@@ -37,6 +37,7 @@ with working_directory("/usr/local/bin"):
     call(["chmod", "+x", filename_jar])
 
 apk_location = "/users/ozgumusy/AndroidStudioProjects/RijksClient/app/app-release.apk"
+project_location = "/users/ozgumusy/AndroidStudioProjects/RijksClient"
 
 with working_directory("/tmp"):
     call(["apktool","d",apk_location])
@@ -76,6 +77,9 @@ print apk_inspect.get_receivers()
 print apk_inspect.get_providers()
 print apk_inspect.get_permissions()
 print apk_inspect.show()
+
+with working_directory(project_location):
+    call(["./gradlew","signingReport"])
 
 
 
