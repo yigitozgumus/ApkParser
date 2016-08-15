@@ -33,6 +33,15 @@ with working_directory("/usr/local/bin"):
     print "Changing the mod of the jar..."
     call(["chmod", "+x", filename_jar])
 
+apk_location = "/users/ozgumusy/AndroidStudioProjects/RijksClient/app/app-release.apk"
+
+with working_directory("/tmp"):
+    call(["apktool","d",apk_location])
+with working_directory("/tmp" + "/app-release" ):
+    f = open("AndroidManifest.xml","rw")
+    for line in f:
+        print line,
+
 
 
 
