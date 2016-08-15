@@ -5,7 +5,7 @@ from apk import APK
 
 
 def test():
-    apk_path = "/home/tdoly/com.android.vending_090150.apk"
+    apk_path = "/users/ozgumusy/AndroidStudioProjects/RijksClient/app/app-release.apk"
     apkf = APK(apk_path)
     print apkf.cert_text
     print apkf.file_md5
@@ -25,9 +25,8 @@ def test():
     print apkf.get_target_sdk_version()
     print apkf.get_libraries()
     print apkf.get_files()
-    # pip install python-magic
     print apkf.get_files_types()
-    # print apkf.get_dex()
+    #print apkf.get_dex()
     print apkf.get_main_activity()
     print apkf.get_activities()
     print apkf.get_services()

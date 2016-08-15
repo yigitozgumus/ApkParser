@@ -1,7 +1,10 @@
+#!/usr/bin/env python
+
 import urllib2
 from subprocess import call
 import os
 from contextlib import contextmanager
+from apk_parse.apk import APK
 
 @contextmanager
 def working_directory(directory):
@@ -37,10 +40,42 @@ apk_location = "/users/ozgumusy/AndroidStudioProjects/RijksClient/app/app-releas
 
 with working_directory("/tmp"):
     call(["apktool","d",apk_location])
+# Print AndroidManifest.xml file
 with working_directory("/tmp" + "/app-release" ):
     f = open("AndroidManifest.xml","rw")
     for line in f:
         print line,
+
+
+apk_inspect = APK(apk_location)
+
+print apk_inspect.cert_text
+print apk_inspect.file_md5
+print apk_inspect.cert_md5
+print apk_inspect.file_size
+print apk_inspect.androidversion
+print apk_inspect.package
+print apk_inspect.get_android_manifest_xml()
+print apk_inspect.get_android_manifest_axml()
+print apk_inspect.is_valid_APK()
+print apk_inspect.get_filename()
+print apk_inspect.get_package()
+print apk_inspect.get_androidversion_code()
+print apk_inspect.get_androidversion_name()
+print apk_inspect.get_max_sdk_version()
+print apk_inspect.get_min_sdk_version()
+print apk_inspect.get_target_sdk_version()
+print apk_inspect.get_libraries()
+print apk_inspect.get_files()
+print apk_inspect.get_files_types()
+    #print apkf.get_dex()
+print apk_inspect.get_main_activity()
+print apk_inspect.get_activities()
+print apk_inspect.get_services()
+print apk_inspect.get_receivers()
+print apk_inspect.get_providers()
+print apk_inspect.get_permissions()
+print apk_inspect.show()
 
 
 
