@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
 
-from subprocess import call
-from contextlib import contextmanager
-from apk_parse.apk import APK
-import os
-import urllib2
-import sys,getopt
 import argparse
+import os
+import sys
+import urllib2
+from contextlib import contextmanager
+from subprocess import call
+
+from apk_parse import apk
+
 
 # Context manager function for changing directory if necessary
 @contextmanager
@@ -23,7 +25,8 @@ def main():
     project,apk = parse_parameters(sys.argv)
     apktool_loading()
     printManifest(apk)
-    executeGradlewSigning(project)
+ #   executeGradlewSigning(project)
+    apkfReport(apk)
 
 
 #function for loading apktool to the system
@@ -77,41 +80,39 @@ def executeGradlewSigning(project_location):
         call(["./gradlew", "signingReport"])
 
 
-# apk_location = "/users/ozgumusy/AndroidStudioProjects/RijksClient/app/app-release.apk"
-# project_location = "/users/ozgumusy/AndroidStudioProjects/RijksClient"
+def apkfReport(apk_location):
+    apk_inspect = apk.APK(apk_location)
+    print apk_inspect.cert_text
+    print apk_inspect.file_md5
+    print apk_inspect.cert_md5
+    print apk_inspect.file_size
+    print apk_inspect.androidversion
+    print apk_inspect.package
+    print apk_inspect.get_android_manifest_xml()
+    print apk_inspect.get_android_manifest_axml()
+    print apk_inspect.is_valid_APK()
+    print apk_inspect.get_filename()
+    print apk_inspect.get_package()
+    print apk_inspect.get_androidversion_code()
+    print apk_inspect.get_androidversion_name()
+    print apk_inspect.get_max_sdk_version()
+    print apk_inspect.get_min_sdk_version()
+    print apk_inspect.get_target_sdk_version()
+    print apk_inspect.get_libraries()
+    print apk_inspect.get_files()
+    print apk_inspect.get_files_types()
+    # print apkf.get_dex()
+    print apk_inspect.get_main_activity()
+    print apk_inspect.get_activities()
+    print apk_inspect.get_services()
+    print apk_inspect.get_receivers()
+    print apk_inspect.get_providers()
+    print apk_inspect.get_permissions()
+    print apk_inspect.show()
 
 
 
 
-# apk_inspect = APK(apk_location)
-
-# print apk_inspect.cert_text
-# print apk_inspect.file_md5
-# print apk_inspect.cert_md5
-# print apk_inspect.file_size
-# print apk_inspect.androidversion
-# print apk_inspect.package
-# print apk_inspect.get_android_manifest_xml()
-# print apk_inspect.get_android_manifest_axml()
-# print apk_inspect.is_valid_APK()
-# print apk_inspect.get_filename()
-# print apk_inspect.get_package()
-# print apk_inspect.get_androidversion_code()
-# print apk_inspect.get_androidversion_name()
-# print apk_inspect.get_max_sdk_version()
-# print apk_inspect.get_min_sdk_version()
-# print apk_inspect.get_target_sdk_version()
-# print apk_inspect.get_libraries()
-# print apk_inspect.get_files()
-# print apk_inspect.get_files_types()
-#     #print apkf.get_dex()
-# print apk_inspect.get_main_activity()
-# print apk_inspect.get_activities()
-# print apk_inspect.get_services()
-# print apk_inspect.get_receivers()
-# print apk_inspect.get_providers()
-# print apk_inspect.get_permissions()
-# print apk_inspect.show()
 
 
 
