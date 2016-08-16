@@ -2,29 +2,21 @@
 
 
 import argparse
-import os
 import sys
 import urllib2
-from contextlib import contextmanager
+from checkUtil import working_directory
 from subprocess import call
+
 
 from apk_parse import apk
 
 
-# Context manager function for changing directory if necessary
-@contextmanager
-def working_directory(directory):
-    owd = os.getcwd()
-    try:
-        os.chdir(directory)
-        yield directory
-    finally:
-        os.chdir(owd)
+
 
 def main():
-    project,apk = parse_parameters(sys.argv)
+    project = parse_parameters(sys.argv)
     apktool_loading()
-    printManifest(apk)
+    #printManifest(apk)
     executeGradlewSigning(project)
     apkfReport(apk)
 
@@ -55,25 +47,20 @@ def apktool_loading():
 
 #This function parses paramenters
 def parse_parameters(argv):
-    apk_location = ''
-    project_location = ''
     parser = argparse.ArgumentParser()
     parser.add_argument('-d','--dir',help='Directory location')
-    parser.add_argument('-a','--apk',help='Apk file location')
     args = parser.parse_args()
-    project_location = args.dir
-    apk_location = args.apk
-    return project_location,apk_location
+    return args.dir
 
 
-def printManifest(apk_location):
-    with working_directory("/tmp"):
-        call(["apktool", "d", apk_location])
-    # Print AndroidManifest.xml file
-    with working_directory("/tmp" + "/app-release"):
-        f = open("AndroidManifest.xml", "rw")
-        for line in f:
-            print line,
+# def printManifest(apk_location):A
+#     with working_directory("/tmp"):
+#         call(["apktool", "d", apk_location])
+#     # Print AndroidManifest.xml file
+#     with working_directory("/tmp" + "/app-release"):
+#         f = open("AndroidManifest.xml", "rw")
+#         for line in f:
+#             print line,
 
 def executeGradlewSigning(project_location):
     with working_directory(project_location):

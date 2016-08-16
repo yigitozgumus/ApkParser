@@ -4,6 +4,7 @@ from contextlib import contextmanager
 import os
 import subprocess
 import xmltodict
+import json,ast
 
 # Context manager function for changing directory if necessary
 @contextmanager
@@ -30,4 +31,4 @@ def extractXML(project_dir,apk_location):
     with working_directory("/tmp" + "/app-release/"):
         with open("AndroidManifest.xml") as fd:
             obj_file = xmltodict.parse(fd.read())
-            return obj_file
+            return ast.literal_eval(json.dumps(obj_file))
