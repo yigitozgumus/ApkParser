@@ -9,7 +9,7 @@ from contextlib import contextmanager
 from subprocess import call
 
 from apk_parse import apk
-
+from berker import ChecklistBerker
 
 # Context manager function for changing directory if necessary
 @contextmanager
@@ -22,11 +22,18 @@ def working_directory(directory):
         os.chdir(owd)
 
 def main():
-    project,apk = parse_parameters(sys.argv)
-    apktool_loading()
-    printManifest(apk)
-    executeGradlewSigning(project)
-    apkfReport(apk)
+    project, apk = parse_parameters(sys.argv)
+    berku = ChecklistBerker(project, apk)
+
+    berku.B4()
+    berku.B6()
+    berku.MAN2()
+    berku.MAN5()
+    berku.SEC1()
+#    apktool_loading()
+#    printManifest(apk)
+#    executeGradlewSigning(project)
+#    apkfReport(apk)
 
 
 #function for loading apktool to the system
