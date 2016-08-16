@@ -7,6 +7,7 @@ from apk_parse.apk import APK
 import os
 import urllib2
 import sys,getopt
+import argparse
 
 # Context manager function for changing directory if necessary
 @contextmanager
@@ -53,18 +54,12 @@ def apktool_loading():
 def parse_parameters(argv):
     apk_location = ''
     project_location = ''
-    try:
-        opts, args = getopt.getopt(argv,"hi:o",["-dir","-apk"])
-    except getopt.GetoptError:
-        print "initializer py -d <projectLocation> -a <apklocation>"
-        sys.exit(2)
-    for opt,arg in opts:
-        if opt in ("-d","--dir"):
-            project_location = arg
-            print "project location is parsed"
-        elif opt in ("-a","-apk"):
-            apk_location = arg
-            print "apk file location is parsed"
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d','--dir',help='Directory location')
+    parser.add_argument('-a','--apk',help='Apk file location')
+    args = parser.parse_args()
+    project_location = args.dir
+    apk_location = args.apk
     return project_location,apk_location
 
 
