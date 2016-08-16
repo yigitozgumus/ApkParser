@@ -3,7 +3,7 @@
 
 from apk import APK
 
-
+#test
 def test():
     apk_path = "/users/ozgumusy/AndroidStudioProjects/RijksClient/app/app-release.apk"
     apkf = APK(apk_path)
