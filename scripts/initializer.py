@@ -25,7 +25,7 @@ def main():
     project,apk = parse_parameters(sys.argv)
     apktool_loading()
     printManifest(apk)
- #   executeGradlewSigning(project)
+    executeGradlewSigning(project)
     apkfReport(apk)
 
 
