@@ -26,7 +26,7 @@ def extractXML(project_dir, apk_location):
     :return: Parsed AndroidManifest Dictionary
     """
     with working_directory(project_dir):
-        subprocess.call(["./gradlew", "assembleRelease"])
+        subprocess.check_output(["./gradlew", "assembleRelease"])
     with working_directory("/tmp"):
         subprocess.call(["apktool", "d", apk_location])
     with working_directory("/tmp" + "/app-debug/"):

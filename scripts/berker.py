@@ -5,11 +5,11 @@ from checkUtil import extractXML
 
 class ChecklistBerker(object):
 
-    def __init__(self, project_dir):
+    def __init__(self, project_dir, apk_dir):
         self.project_dir = project_dir
-      #  self.apk_dir = apk_dir
+        self.apk_dir = apk_dir
         self.apkf = APK("/Users/senolb/Desktop/pokemon.apk")
-        self.manifestDict = extractXML(project_dir, project_dir+"/app/build/outputs/apk")
+        self.manifestDict = extractXML(project_dir, apk_dir)
         print self.manifestDict
 
 
@@ -49,4 +49,5 @@ class ChecklistBerker(object):
                 return
 
         print "SEC1 succeed! android:allowBackup is set to false"
+
 
