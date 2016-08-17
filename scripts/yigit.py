@@ -4,6 +4,7 @@ from checkUtil import working_directory
 from checkUtil import extractXML
 from apk_parse import apk
 import subprocess
+import gradleParser
 import re
 import os
 
@@ -17,113 +18,220 @@ class ChecklistYigit(object):
     is_apk_created = False
     apk_location = "/app/build/outputs/apk/app-release.apk"
 
-    def __init__(self,project_dir):
+    def __init__(self,project_dir,apk_dir):
         self.project_dir = project_dir
-        self.apkf_inspect = apk.APK(project_dir+self.apk_location)
+        self.apk_dir = apk_dir
+        self.manifest = extractXML(project_dir,apk_dir)
+        self.apkf_inspect = apk.APK(apk_dir)
+        self.gradle = gradleParser.GradleParser(self.project_dir+"/app").parse()
 
-    def B2(self,project_dir):
+    def B2(self):
         """
         This test executes gradle signing Report
         :param project_dir: Project location
         :return: to be documented
         """
-        with working_directory(project_dir):
-            subprocess.call(["./gradlew","signingReport"])
+        print "\n========== B2 Test ==========\n"
+        #TODO release key check will be added
+        with working_directory(self.project_dir):
+            output =  subprocess.check_output(["./gradlew","signingReport"])
+            if "BUILD SUCCESSFUL" in output:
+                print "Signing task is successful, keys are valid"
+            else:
+                print "Please check assigned keys"
 
-    def createAPK(self,project_dir):
-        with working_directory(project_dir):
-            subprocess.call(["./gradlew","assembleRelease"])
+    def createAPK(self):
+        """
+
+        :return:
+        """
+        with working_directory(self.project_dir):
+            subprocess.check_output(["./gradlew","assembleRelease"])
         self.is_apk_created = True
         print "Apk file is created"
 
-    def B5(self,project_dir):
+    def B5(self):
+        """
 
+        :return:
+        """
+        print "\n========== B5 Test ==========\n"
         if(not self.is_apk_created):
-            self.createAPK(project_dir)
-
-        min_sdk = self.apk_inspect.get_min_sdk_version()
+            self.createAPK()
+        min_sdk = self.apkf_inspect.get_min_sdk_version()
         if(min_sdk == 16):
             print " Minimum sdk version is 16. Test successful."
         else:
             print "Please check minimum sdk version of the project."
 
-    def B7(self,project_dir):
+    def B7(self):
+        """
+
+        :return:
+        """
+        print "\n========== B7 Test ==========\n"
         #TODO ask the checklist item
         if(not self.is_apk_created):
-            self.createAPK(project_dir)
-        compileSdk = self.apk_inspect.get_element("uses-sdk","compileSdkVersion")
-        print compileSdk
+            self.createAPK()
+        compile_sdk = self.gradle["android"]["compileSdkVersion"][0]
+        print "Project compileSdkVersion is " + compile_sdk + \
+                ". Check for behavioral changes accordingly"
 
-    def B8(self,project_dir):
-        #TODO more comprehensive ?
-        with working_directory(project_dir):
-            output =  subprocess.check_output(["./gradlew","androidDependencies"])
-            pattern = re.compile(".\+")
-            result = pattern.search(output)
-            if(result == None):
-                print "Each dependency injected has a specific version "
-            else:
-                print "Check dependencies"
+    def B8(self):
+        """
+
+        :return:
+        """
+        print "\n========== B8 Test ==========\n"
+
+        dependencies = self.gradle["dependencies"]["compile"]
+
+        is_valid = True
+        for dependency in dependencies:
+            if not(re.search("\d+.\+", dependency)== None):
+                is_valid = False
+                print "check the latest version of " + dependency[1:-2]
+        if is_valid:
+            print "Every dependency injected has a specific version"
 
 
-    def MAN1(self,project_dir):
+
+    def MAN1(self):
+        """
+
+        :return:
+        """
+        print "\n========== MAN1 Test ==========\n"
         #TODO How to read previous version code ?
-        with working_directory(project_dir+"/build"):
-            file = open("build.gradle","r")
-            pattern = re._compile("versionCode")
-            for line in file:
-                match = pattern.search(line)
-                if(not (match == None)):
-                    temp,ver = line.split(" ")
-                    print ver
-    def MAN3(self,project_dir):
-        with working_directory(project_dir+"/build"):
-            file = open("build.gradle","r")
-            pattern = re._compile("versionName")
-            for line in file:
-                match = pattern.search(line)
-                if(not(match == None)):
-                    temp,ver = line.split(" ")
-                    versions = ver.split(".")
-                    if(not(len(versions) == 4)):
-                        print "Version name does not follow <major>.<minor>.<patch>.<buildNumber> convention."
-                    else:
-                        print "Version name is valid"
+        versionCode = self.gradle['android']['defaultConfig']['versionCode'][0]
+        print "Current version code is " + versionCode
+    def MAN3(self):
+        """
 
-    def SIGN4(self,project_dir):
+        :return:
+        """
+        print "\n========== MAN3 Test ==========\n"
+        version_name = self.gradle["android"]["defaultConfig"]["versionName"][0]
+        versions = version_name.split(".")
+        if(not(len(versions) == 4)):
+            print "Version name does not follow <major>.<minor>.<patch>.<buildNumber> convention."
+        else:
+            print "Version name is valid"
+
+    def SIGN4(self):
+        """
+
+        :return:
+        """
+        print "\n========== SIGN4 Test ==========\n"
         #TODO improve test logic.
-        with working_directory(project_dir+"/build"):
-            password_check = {"storePassword": 0,"keyAlias":0,"keyPassword":0}
-            file = open("build.gradle","r")
-            for line in file:
-                if "storePassword" in line: password_check["storePassword"] = 1
-                elif "keyAlias" in line: password_check["keyAlias"] = 1
-                elif "keyPassword" in line: password_check["keyPassword"] = 1
-            if 0 in password_check.values():
-                print " Check signing Release password values"
+        config_values = self.gradle["android"]["signingConfigs"]["config"]
+        num_configs = len(config_values.keys())
+        isValid = True
+        if(num_configs < 4):
+            print "all values for the signingConfig are not defined.\n Defined are below:\n"
+            for key in config_values.keys():
+                print "the key name is" + key + "and its value is" + config_values[key][0][1:-1]
+            return
+        for check in config_values.keys():
+            if( len(config_values[check]) == 0):
+                print "Check " + check + " value"
+                isValid =False
+        if(isValid):
+            print "All signingConfig values are valid"
+
+    def PERM3(self):
+        """
+
+        :return:
+        """
+        print "\n========== PERM3 Test ==========\n"
+
+        if (not self.is_apk_created):
+            self.createAPK()
+        feature_list = self.manifest['manifest']
+        if 'uses-feature' in feature_list:
+            if (not(len(feature_list) == 0)):
+                print " to be implemented"
             else:
-                print " Signing Release Passsword values are validated"
+                print "There is no uses-feature tag in this AndroidManifest.xml"
 
-    def PERM3(self,project_dir):
-        #TODO gradle parser would be better choice
-        if (not self.is_apk_created):
-            self.createAPK(project_dir)
-        manifest = extractXML(project_dir,project_dir+self.apk_location)
-        feature_list = manifest['manifest']['@uses-feature']
-        if (not(len(feature_list) == 0)):
-            print " to be implemented"
+    def PRG3(self):
+        """
 
-    def APK2(self,project_dir):
+        :return:
+        """
+        print "\n========== PRG3 Test ==========\n"
+        proguard_files = self.gradle["android"]["buildTypes"]["release"]["proguardFiles"]
+        proguard_size = len(proguard_files)
+        if(proguard_size < 2):
+            print "Please check whether proguard-rules.pro or proguard-android.txt is added."
+            return
+        elif(proguard_size >= 2):
+            print "Added proguard files listed below:\n"
+            for i in range(len(proguard_files)):
+                if(i==0):
+                    result = re.search("\'[\s\S]+\'",proguard_files[i])
+                    print str(i+1) + "-) " +   result.group(0)
+                else:
+                    print str(i+1) + "-) " + proguard_files[i]
+
+
+
+    def APK2(self):
+        """
+
+        :return:
+        """
+        print "\n========== APK2 Test ==========\n"
         if (not self.is_apk_created):
-            self.createAPK(project_dir)
-        apk_size = os.path.getsize(project_dir+self.apk_location)
+            self.createAPK()
+        apk_size = os.path.getsize(self.apk_dir)
         apk_size = apk_size / (1024 * 1024)
         if (apk_size < 15):
             print "Apk size is within limits."
         else:
             print "Apk size exceeds limits (>15mb)."
 
-    def SEC4(self,project_dir):
+    def SEC4(self):
+        """
+
+        :return:
+        """
+        print "\n========== SEC4 Test ==========\n"
         if (not self.is_apk_created):
-            self.createAPK(project_dir)
-        manifest = extractXML(project_dir, project_dir + self.apk_location)
+            self.createAPK()
+        activities = self.manifest['manifest']['application']['activity']
+        services = self.manifest['manifest']['application']['service']
+        receivers = self.manifest['manifest']['application']['receiver']
+        isValid = True
+        for check in activities:
+            if 'intent-filter' in check:
+                if '@android:exported' in check:
+                    if check['@android:exported'] == 'false' in check:
+                        pass
+                    else:
+                        print "android:exported value in "+check['@android:name'] +" should be set to false"
+                else:
+                    print " Please add android:exported = false attribute to the "+ check['@android:name']
+
+        for check in services:
+            if 'intent-filter' in check:
+                if '@android:exported' in check:
+                    if check['@android:exported'] == 'false' in check:
+                        pass
+                    else:
+                        print "android:exported value in "+check['@android:name'] +" should be set to false"
+                else:
+                    print " Please add android:exported = false attribute to the "+ check['@android:name']
+        for check in receivers:
+            if 'intent-filter' in check:
+                if '@android:exported' in check:
+                    if check['@android:exported'] == 'false' in check:
+                        pass
+                    else:
+                        print "android:exported value in "+check['@android:name'] +" should be set to false"
+                else:
+                    print " Please add android:exported = false attribute to the "+ check['@android:name']
+
+

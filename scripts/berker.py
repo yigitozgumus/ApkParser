@@ -8,9 +8,9 @@ class ChecklistBerker(object):
     def __init__(self, project_dir, apk_dir):
         self.project_dir = project_dir
         self.apk_dir = apk_dir
-        self.apkf = APK("/Users/senolb/Desktop/pokemon.apk")
+        self.apkf = APK(apk_dir)
         self.manifestDict = extractXML(project_dir, apk_dir)
-        print self.manifestDict
+        
 
 
     def B4(self):
