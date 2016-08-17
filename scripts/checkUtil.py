@@ -4,7 +4,8 @@ from contextlib import contextmanager
 import os
 import subprocess
 import xmltodict
-import json,ast
+import json, ast
+
 
 # Context manager function for changing directory if necessary
 @contextmanager
@@ -16,7 +17,8 @@ def working_directory(directory):
     finally:
         os.chdir(owd)
 
-def extractXML(project_dir,apk_location):
+
+def extractXML(project_dir, apk_location):
     """
     Parses AndroidManifest file and returns a dictionary object
     :param project_dir: Project Location
@@ -26,9 +28,8 @@ def extractXML(project_dir,apk_location):
     with working_directory(project_dir):
         subprocess.call(["./gradlew", "assembleRelease"])
     with working_directory("/tmp"):
-        subprocess.call(["apktool","d",apk_location])
-    #Print AndroidManifest.xml
-    with working_directory("/tmp" + "/app-release/"):
+        subprocess.call(["apktool", "d", apk_location])
+    with working_directory("/tmp" + "/app-debug/"):
         with open("AndroidManifest.xml") as fd:
             obj_file = xmltodict.parse(fd.read())
             return ast.literal_eval(json.dumps(obj_file))
