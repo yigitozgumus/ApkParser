@@ -36,7 +36,7 @@ class ChecklistYigit(object):
         with working_directory(self.project_dir):
             output =  subprocess.check_output(["./gradlew","signingReport"])
             if "BUILD SUCCESSFUL" in output:
-                print "Signing task is successful, keys are valid"
+                print "Signing task build is successful, keys are valid"
             else:
                 print "Please check assigned keys"
 
@@ -48,7 +48,7 @@ class ChecklistYigit(object):
         with working_directory(self.project_dir):
             subprocess.check_output(["./gradlew","assembleRelease"])
         self.is_apk_created = True
-        print "Apk file is created"
+        # print "Apk file is created"
 
     def B5(self):
         """
@@ -62,7 +62,7 @@ class ChecklistYigit(object):
         if(min_sdk == 16):
             print " Minimum sdk version is 16. Test successful."
         else:
-            print "Please check minimum sdk version of the project."
+            print "Test failed. Your project's minimum sdk is not 16, it is " +min_sdk+". "
 
     def B7(self):
         """
@@ -90,9 +90,11 @@ class ChecklistYigit(object):
         for dependency in dependencies:
             if not(re.search("\d+.\+", dependency)== None):
                 is_valid = False
-                print "check the latest version of " + dependency[1:-2]
+                print "Please check the latest version of " + dependency[1:-1]
         if is_valid:
             print "Every dependency injected has a specific version"
+        else:
+            print "Test failed."
 
 
 
@@ -105,6 +107,7 @@ class ChecklistYigit(object):
         #TODO How to read previous version code ?
         versionCode = self.gradle['android']['defaultConfig']['versionCode'][0]
         print "Current version code is " + versionCode
+
     def MAN3(self):
         """
 
@@ -187,9 +190,11 @@ class ChecklistYigit(object):
         if (not self.is_apk_created):
             self.createAPK()
         apk_size = os.path.getsize(self.apk_dir)
+        apk_rest = apk_size % (1024 * 1024)
         apk_size = apk_size / (1024 * 1024)
+
         if (apk_size < 15):
-            print "Apk size is within limits."
+            print "Test succeed. Apk size is within limits.(" + str(apk_size)+","+str(apk_rest) + "mb)."
         else:
             print "Apk size exceeds limits (>15mb)."
 
@@ -211,9 +216,11 @@ class ChecklistYigit(object):
                     if check['@android:exported'] == 'false' in check:
                         pass
                     else:
-                        print "android:exported value in "+check['@android:name'] +" should be set to false"
+                        isValid = False
+                        print check['@android:name']+ "\t--> android:exported value should be set to false"
                 else:
-                    print " Please add android:exported = false attribute to the "+ check['@android:name']
+                    isValid = False
+                    print check['@android:name']+ "\t--> Please add android:exported=\"false\" attribute"
 
         for check in services:
             if 'intent-filter' in check:
@@ -221,17 +228,24 @@ class ChecklistYigit(object):
                     if check['@android:exported'] == 'false' in check:
                         pass
                     else:
-                        print "android:exported value in "+check['@android:name'] +" should be set to false"
+                        isValid = False
+                        print check['@android:name']+ "\t--> android:exported value should be set to false"
                 else:
-                    print " Please add android:exported = false attribute to the "+ check['@android:name']
+                    isValid = False
+                    print check['@android:name']+ "\t--> Please add android:exported=\"false\" attribute"
         for check in receivers:
             if 'intent-filter' in check:
                 if '@android:exported' in check:
                     if check['@android:exported'] == 'false' in check:
                         pass
                     else:
-                        print "android:exported value in "+check['@android:name'] +" should be set to false"
+                        isValid = False
+                        print check['@android:name']+ "\t--> android:exported value should be set to false"
                 else:
-                    print " Please add android:exported = false attribute to the "+ check['@android:name']
+                    isValid = False
+                    print check['@android:name']+ "\t--> Please add android:exported=\"false\" attribute"
 
-
+        if(isValid):
+            print "Test is successful."
+        else:
+            print "Test failed."
