@@ -247,6 +247,6 @@ class ChecklistYigit(object):
                     print "CONFIRM: "+ check['@android:name']+ "\t--> Please add android:exported=\"false\" attribute"
 
         if(isValid):
-            print "Test is successful."
+            print "SUCCEED."
         else:
-            print "Test failed."
+            print "FAILED."
