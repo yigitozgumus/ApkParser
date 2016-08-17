@@ -18,10 +18,11 @@ class GradleParser(object):
 
     def parse(self):
         current_entry = object()
+        self.gradle_dict["outside"] = defaultdict(list)
         for line in self.file:
             if line in ['\n', '\r\n']:
                 pass
-            if "//" in line:
+            elif "//" in line:
                 pass
             elif "{" in line.strip():
                 arg,sep = line.strip().split(" ")
@@ -29,10 +30,11 @@ class GradleParser(object):
                 self.gradle_dict[arg] = defaultdict(list)
                 current_entry = self.gradle_dict[arg]
             elif "{" and "}" not in line.strip():
-                if(len(self.gradle_dict) == 0):
-                    self.gradle_dict["outside"] = defaultdict(list)
+
                 current_entry = self.gradle_dict[self.dictionary_list[len(self.dictionary_list)-1]]
                 args = line.strip().split(" ")
+                if(len(args)== 1):
+                     current_entry[args[0]].append(args[0])
                 if(len(args) == 2):
                     current_entry[args[0]].append(args[1])
                 elif(len(args)> 2):
