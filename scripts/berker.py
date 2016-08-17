@@ -20,15 +20,15 @@ class ChecklistBerker(object):
         appId = self.apkf.get_package()
         startingName = "com.monitise.mea."
         if appId.startswith(startingName):
-            print "B4 succeed! Your project name starts with \"com.monitise.mea\"."
+            print "SUCCEED! Your project name starts with \"com.monitise.mea\"."
         else:
-            print "B4 failed! Your project name does not start with \"com.monitise.mea\" It starts with " + appId
+            print "FAILED! Your project name does not start with \"com.monitise.mea\" It starts with " + appId
 
     def B6(self):
         print "\n========== B6 Test ==========\n"
 
         targetSDK = self.apkf.get_target_sdk_version()
-        print "B6 Test: Your targetSdkVersion is: " + targetSDK + \
+        print "CONFIRM: Your targetSdkVersion is: " + targetSDK + \
               ". Please check if this is the most recent api version that app is tested against."
 
     def B7(self):
@@ -36,10 +36,10 @@ class ChecklistBerker(object):
 
         for dep in self.gradleDict["dependencies"]["compile"]:
             if "com.google.android.gms:play-services:" in dep:
-                print "B7 failed! Google Play Services API should be included as separate dependencies."
+                print "FAILED! Google Play Services API should be included as separate dependencies."
                 return
 
-        print "B7 succeed! Google Play Services API is not included with just one line. (or not included at all)"
+        print "SUCCEED! Google Play Services API is not included with just one line. (or not included at all)"
 
     def B9(self):
         print "\n========== B9 Test ==========\n"
@@ -47,19 +47,19 @@ class ChecklistBerker(object):
         if self.manifestDict.has_key("debuggable"):
             deb = self.manifestDict['manifest']['application']['@android:debuggable']
             if deb:
-                print "B9 failed! debuggable should not be set to true."
+                print "FAILED! debuggable should not be set to true."
                 return
 
-        print "B9 succeed! debuggable is not set to true."
+        print "SUCCEED! debuggable is not set to true."
 
     def MAN2(self):
         print "\n========== MAN2 Test ==========\n"
 
         if "@android:versionName" in self.manifestDict['manifest']:
             version = self.manifestDict['manifest']['@android:versionName']
-            print "MAN2 Test: Dismiss if you updated your version. android:versionName is set to: " + version + "."
+            print "CONFIRM: Dismiss if you updated your version. android:versionName is set to: " + version + "."
 
-        print "MAN2 failed! You need to update android:versionName."
+        print "FAILED! You need to update android:versionName."
 
     def MAN5(self):
         print "\n========== MAN5 Test ==========\n"
@@ -67,15 +67,15 @@ class ChecklistBerker(object):
         if "@android:installLocation" in self.manifestDict['manifest']:
             location = self.manifestDict['manifest']['@android:installLocation']
             if location == "externalOnly":
-                print "MAN5 failed! You cannot set android:installLocation to externalOnly."
+                print "FAILED! You cannot set android:installLocation to externalOnly."
                 return
 
-        print "MAN5 succeed! android:installLocation is not set to externalOnly."
+        print "SUCCEED! android:installLocation is not set to externalOnly."
 
     def PERM2(self):
         print "\n========== PERM2 Test ==========\n"
 
-        print "PERM2 Test: Check if all the permissions are necessary:"
+        print "CONFIRM: Check if all the permissions are necessary:"
         counter = 0
         for i in self.apkf.get_permissions():
             print "\t- " + self.apkf.get_permissions()[counter]
@@ -87,10 +87,10 @@ class ChecklistBerker(object):
         if "@android:allowBackup" in self.manifestDict['manifest']['application']:
             backup = self.manifestDict['manifest']['application']['@android:allowBackup']
             if backup:
-                print "SEC1 failed! android:allowBackup is set to true."
+                print "FAILED! android:allowBackup is set to true."
                 return
 
-        print "SEC1 succeed! android:allowBackup is set to false.n"
+        print "SUCCEED! android:allowBackup is set to false.n"
 
     def PRG2(self):
         print "\n========== PRG2 Test ==========\n"
@@ -102,7 +102,7 @@ class ChecklistBerker(object):
             shrinkResources = self.gradleDict["android"]["buildTypes"]["release"]["shrinkResources"][0]
 
             if minifyEnabled and shrinkResources:
-                print "PRG2 succeed! minifyEnabled and shrinkResources are set to true."
+                print "SUCCEED! minifyEnabled and shrinkResources are set to true."
                 return
 
-        print "PRG2 failed! minifyEnabled and shrinkResources must be true."
+        print "FAILED! minifyEnabled and shrinkResources must be true."
