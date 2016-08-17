@@ -9,11 +9,11 @@ class ChecklistBerker(object):
         self.project_dir = project_dir
 
         self.apk_dir = apk_dir
-        self.apkf = APK("/Users/senolb/Desktop/pokemon.apk")
+        self.apkf = APK(apk_dir)
 
-        self.manifestDict = extractXML(project_dir, project_dir + "/app/build/outputs/apk/apk-debug.apk")
-        gradleRaw = gr.GradleParser("/Users/senolb/Desktop/deneme")
-        self.gradleDict = gradleRaw.parse()
+        self.manifestDict = extractXML(project_dir, apk_dir)
+        self.gradleDict = gr.GradleParser(self.project_dir+"/app").parse()
+
 
     def B4(self):
         appId = self.apkf.get_package()

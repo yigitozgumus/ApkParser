@@ -222,7 +222,8 @@ class ChecklistYigit(object):
                     isValid = False
                     print check['@android:name']+ "\t--> Please add android:exported=\"false\" attribute"
 
-        for check in services:
+        for check in services:\
+
             if 'intent-filter' in check:
                 if '@android:exported' in check:
                     if check['@android:exported'] == 'false' in check:
