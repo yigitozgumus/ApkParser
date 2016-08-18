@@ -9,7 +9,12 @@ from subprocess import call
 import CheckList as cl
 
 def main():
-    project = parse_parameters(sys.argv)
+    args = parse_parameters(sys.argv)
+    project = args.dir
+    tasks = ''
+    if args.tasks :
+        tasks = args.tasks
+        print tasks
     apk_extension= "/app/build/outputs/apk/app-release.apk"
     # apktool_loading()
     tester = cl.Checklist(project,project+apk_extension)
@@ -44,9 +49,14 @@ def apktool_loading():
 #This function parses paramenters
 def parse_parameters(argv):
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d','--dir',help='Directory location')
-    args = parser.parse_args()
-    return args.dir
+    parser.add_argument('-d','--dir',
+                        nargs='?',
+                        help='Directory location')
+    parser.add_argument('-t','--tasks',
+                        nargs=1,
+                        help='Optional task file to import check functions')
+
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
