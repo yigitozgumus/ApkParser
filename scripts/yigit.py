@@ -128,20 +128,23 @@ class ChecklistYigit(object):
         """
         print "\n========== SIGN4 Test ==========\n"
         #TODO improve test logic.
-        config_values = self.gradle["android"]["signingConfigs"]["config"]
-        num_configs = len(config_values.keys())
-        isValid = True
-        if(num_configs < 4):
-            print "FAILED. all values for the signingConfig are not defined.\n Defined are below:\n"
-            for key in config_values.keys():
-                print "the key name is" + key + "and its value is" + config_values[key][0][1:-1]
-            return
-        for check in config_values.keys():
-            if( len(config_values[check]) == 0):
-                print "Check " + check + " value"
-                isValid =False
-        if(isValid):
-            print "SUCCEED. All signingConfig values are valid"
+        if "config" in self.gradle['android']['signingConfigs']:
+            config_values = self.gradle["android"]["signingConfigs"]["config"]
+            num_configs = len(config_values.keys())
+            isValid = True
+            if(num_configs < 4):
+                print "FAILED. all values for the signingConfig are not defined.\n Defined are below:\n"
+                for key in config_values.keys():
+                    print "the key name is" + key + "and its value is" + config_values[key][0][1:-1]
+                return
+            for check in config_values.keys():
+                if( len(config_values[check]) == 0):
+                    print "Check " + check + " value"
+                    isValid =False
+            if(isValid):
+                print "SUCCEED. All signingConfig values are valid"
+        else:
+            print "FAILED. There is no config value in signingConfigs tag in your project."
 
     def PERM3(self):
         """
@@ -152,12 +155,23 @@ class ChecklistYigit(object):
 
         if (not self.is_apk_created):
             self.createAPK()
+        isValid = True
         feature_list = self.manifest['manifest']
-        if 'uses-feature' in feature_list:
-            if (not(len(feature_list) == 0)):
-                print "FAILED: to be implemented"
-            else:
-                print "CONFIRM: There is no uses-feature tag in this AndroidManifest.xml"
+        if 'uses-feature' in feature_list.keys():
+            uses_f = feature_list['uses-feature']
+            if ( not(type(uses_f) == list)):
+                uses_f = [uses_f]
+            for feature in uses_f:
+                if "@android:name" in feature:
+                    feature_name = feature['@android:name']
+                    if "hardware" in feature_name:
+                        if not(feature['@android:required'] == "False"):
+                            isValid = False
+                            print "FAILED. Please change " + feature['@android:name'] + " requirement to False"
+            if isValid:
+                print "SUCCESS. Test is successful"
+        else:
+            print "CONFIRM: There is no uses-feature tag in this AndroidManifest.xml"
 
     def PRG3(self):
         """
@@ -168,6 +182,7 @@ class ChecklistYigit(object):
         proguard_files = self.gradle["android"]["buildTypes"]["release"]["proguardFiles"]
         proguard_size = len(proguard_files)
         if(proguard_size < 2):
+            #proguard-generic.txt
             print "FAILED. Please check whether proguard-rules.pro or proguard-android.txt is added."
             return
         elif(proguard_size >= 2):
@@ -206,45 +221,54 @@ class ChecklistYigit(object):
         print "\n========== SEC4 Test ==========\n"
         if (not self.is_apk_created):
             self.createAPK()
-        activities = self.manifest['manifest']['application']['activity']
-        services = self.manifest['manifest']['application']['service']
-        receivers = self.manifest['manifest']['application']['receiver']
+        activities, services,receivers = object(),object(),object()
+        activity_exist,service_exist,receiver_exist = False,False,False
+        if 'activity' in self.manifest['manifest']['application'].keys():
+            activity_exist = True
+            activities = self.manifest['manifest']['application']['activity']
+        if 'service' in self.manifest['manifest']['application'].keys():
+            service_exist = True
+            services = self.manifest['manifest']['application']['service']
+        if 'receiver' in self.manifest['manifest']['application'].keys():
+            receiver_exist = True
+            receivers = self.manifest['manifest']['application']['receiver']
         isValid = True
-        for check in activities:
-            if 'intent-filter' in check:
-                if '@android:exported' in check:
-                    if check['@android:exported'] == 'false' in check:
-                        pass
+        if not(activities == None):
+            for check in activities:
+                if 'intent-filter' in check:
+                    if '@android:exported' in check:
+                        if check['@android:exported'] == 'false' in check:
+                            pass
+                        else:
+                            isValid = False
+                            print"CONFIRM: "+ check['@android:name']+ "\t--> android:exported value should be set to false"
                     else:
                         isValid = False
-                        print"CONFIRM: "+ check['@android:name']+ "\t--> android:exported value should be set to false"
-                else:
-                    isValid = False
-                    print "CONFIRM: "+ check['@android:name']+ "\t--> Please add android:exported=\"false\" attribute"
-
-        for check in services:\
-
-            if 'intent-filter' in check:
-                if '@android:exported' in check:
-                    if check['@android:exported'] == 'false' in check:
-                        pass
+                        print "CONFIRM: "+ check['@android:name']+ "\t--> Please add android:exported=\"false\" attribute"
+        if not(services == None):
+            for check in services:
+                if 'intent-filter' in check:
+                    if '@android:exported' in check:
+                        if check['@android:exported'] == 'false' in check:
+                            pass
+                        else:
+                            isValid = False
+                            print "CONFIRM: "+ check['@android:name']+ "\t--> android:exported value should be set to false"
                     else:
                         isValid = False
-                        print "CONFIRM: "+ check['@android:name']+ "\t--> android:exported value should be set to false"
-                else:
-                    isValid = False
-                    print "CONFIRM: "+ check['@android:name']+ "\t--> Please add android:exported=\"false\" attribute"
-        for check in receivers:
-            if 'intent-filter' in check:
-                if '@android:exported' in check:
-                    if check['@android:exported'] == 'false' in check:
-                        pass
+                        print "CONFIRM: "+ check['@android:name']+ "\t--> Please add android:exported=\"false\" attribute"
+        if not(receivers == None):
+            for check in receivers:
+                if 'intent-filter' in check:
+                    if '@android:exported' in check:
+                        if check['@android:exported'] == 'false' in check:
+                            pass
+                        else:
+                            isValid = False
+                            print "CONFIRM: "+ check['@android:name']+ "\t--> android:exported value should be set to false"
                     else:
                         isValid = False
-                        print "CONFIRM: "+ check['@android:name']+ "\t--> android:exported value should be set to false"
-                else:
-                    isValid = False
-                    print "CONFIRM: "+ check['@android:name']+ "\t--> Please add android:exported=\"false\" attribute"
+                        print "CONFIRM: "+ check['@android:name']+ "\t--> Please add android:exported=\"false\" attribute"
 
         if(isValid):
             print "SUCCEED."
