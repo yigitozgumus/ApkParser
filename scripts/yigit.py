@@ -173,26 +173,27 @@ class ChecklistYigit(object):
         else:
             print "CONFIRM: There is no uses-feature tag in this AndroidManifest.xml"
 
-    def PRG3(self):
+    def PRG3(self,proguard_list):
         """
 
         :return:
         """
         print "\n========== PRG3 Test ==========\n"
         proguard_files = self.gradle["android"]["buildTypes"]["release"]["proguardFiles"]
-        proguard_size = len(proguard_files)
-        if(proguard_size < 2):
-            #proguard-generic.txt
-            print "FAILED. Please check whether proguard-rules.pro or proguard-android.txt is added."
-            return
-        elif(proguard_size >= 2):
-            print "CONFIRM: Added proguard files listed below:\n"
-            for i in range(len(proguard_files)):
-                if(i==0):
-                    result = re.search("\'[\s\S]+\'",proguard_files[i])
-                    print str(i+1) + "-) " +   result.group(0)
-                else:
-                    print str(i+1) + "-) " + proguard_files[i]
+        isValid = True
+        for file in proguard_files:
+            check_file = re.search("\'[\s\S]+\'",file).group(0).strip("\\'")
+            if check_file in proguard_list:
+                isValid = False
+                print"WARNING: "+ check_file + " is added to the build.gradle"
+        if isValid:
+            print "SUCCEED."
+        else:
+            print "FAILED."
+
+        print "Added proguard files listed below:\n"
+        for i in range(len(proguard_files)):
+            print  "{0}-) {1}".format(str(i+1),re.search("\'[\s\S]+\'",proguard_files[i]).group(0))
 
 
 

@@ -2,8 +2,6 @@
 
 import yigit
 import berker
-import checkUtil
-import gradleParser
 
 class Checklist(object):
 
@@ -15,27 +13,27 @@ class Checklist(object):
 
     def executeTests(self):
 
-        self.checklist_yigit.B2()
-        self.checklist_berker.B4()
-        self.checklist_yigit.B5()
-        self.checklist_berker.B6()
-        self.checklist_yigit.B7()
-        self.checklist_berker.B7()
-        self.checklist_yigit.B8()
-        self.checklist_berker.B9()
-
-        self.checklist_yigit.MAN1()
-        self.checklist_berker.MAN2()
-        self.checklist_yigit.MAN3()
-        self.checklist_berker.MAN5()
-
-        self.checklist_yigit.SIGN4()
-
-        self.checklist_berker.PERM2()
-        self.checklist_yigit.PERM3()
-
-        self.checklist_berker.PRG2()
-        self.checklist_yigit.PRG3()
+        # self.checklist_yigit.B2()
+        # self.checklist_berker.B4()
+        # self.checklist_yigit.B5()
+        # self.checklist_berker.B6()
+        # self.checklist_yigit.B7()
+        # self.checklist_berker.B7()
+        # self.checklist_yigit.B8()
+        # self.checklist_berker.B9()
+        #
+        # self.checklist_yigit.MAN1()
+        # self.checklist_berker.MAN2()
+        # self.checklist_yigit.MAN3()
+        # self.checklist_berker.MAN5()
+        #
+        # self.checklist_yigit.SIGN4()
+        #
+        # self.checklist_berker.PERM2()
+        # self.checklist_yigit.PERM3()
+        #
+        # self.checklist_berker.PRG2()
+        self.checklist_yigit.PRG3(['proguard-android.txt','proguard-rules.pro'])
 
         self.checklist_yigit.APK2()
 
