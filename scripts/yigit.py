@@ -11,7 +11,6 @@ import os
 class ChecklistYigit(object):
     """
     This class checks certain checklist items regarding the Android project
-
     Attributes:
         project_dir : Project directory of the Android app
     """
@@ -42,7 +41,6 @@ class ChecklistYigit(object):
 
     def createAPK(self):
         """
-
         :return:
         """
         with working_directory(self.project_dir):
@@ -50,23 +48,21 @@ class ChecklistYigit(object):
         self.is_apk_created = True
         # print "Apk file is created"
 
-    def B5(self):
+    def B5(self,config_minSdk):
         """
-
         :return:
         """
         print "\n========== B5 Test ==========\n"
         if(not self.is_apk_created):
             self.createAPK()
         min_sdk = self.apkf_inspect.get_min_sdk_version()
-        if(min_sdk == 16):
-            print "SUCCEED. Minimum sdk version is 16. Test successful."
+        if(min_sdk == config_minSdk):
+            print "SUCCEED. Minimum sdk version is " + config_minSdk + ". Test successful."
         else:
-            print "FAILED. Test failed. Your project's minimum sdk is not 16, it is " +min_sdk+". "
+            print "FAILED. Test failed. Your project's minimum sdk is not " + config_minSdk +", it is " +min_sdk+". "
 
     def B7(self):
         """
-
         :return:
         """
         print "\n========== B7 Test ==========\n"
@@ -79,7 +75,6 @@ class ChecklistYigit(object):
 
     def B8(self):
         """
-
         :return:
         """
         print "\n========== B8 Test ==========\n"
@@ -100,7 +95,6 @@ class ChecklistYigit(object):
 
     def MAN1(self):
         """
-
         :return:
         """
         print "\n========== MAN1 Test ==========\n"
@@ -110,7 +104,6 @@ class ChecklistYigit(object):
 
     def MAN3(self):
         """
-
         :return:
         """
         print "\n========== MAN3 Test ==========\n"
@@ -123,7 +116,6 @@ class ChecklistYigit(object):
 
     def SIGN4(self):
         """
-
         :return:
         """
         print "\n========== SIGN4 Test ==========\n"
@@ -148,7 +140,6 @@ class ChecklistYigit(object):
 
     def PERM3(self):
         """
-
         :return:
         """
         print "\n========== PERM3 Test ==========\n"
@@ -173,32 +164,31 @@ class ChecklistYigit(object):
         else:
             print "CONFIRM: There is no uses-feature tag in this AndroidManifest.xml"
 
-    def PRG3(self):
+    def PRG3(self,proguard_list):
         """
-
         :return:
         """
         print "\n========== PRG3 Test ==========\n"
         proguard_files = self.gradle["android"]["buildTypes"]["release"]["proguardFiles"]
-        proguard_size = len(proguard_files)
-        if(proguard_size < 2):
-            #proguard-generic.txt
-            print "FAILED. Please check whether proguard-rules.pro or proguard-android.txt is added."
-            return
-        elif(proguard_size >= 2):
-            print "CONFIRM: Added proguard files listed below:\n"
-            for i in range(len(proguard_files)):
-                if(i==0):
-                    result = re.search("\'[\s\S]+\'",proguard_files[i])
-                    print str(i+1) + "-) " +   result.group(0)
-                else:
-                    print str(i+1) + "-) " + proguard_files[i]
+        isValid = True
+        for file in proguard_files:
+            check_file = re.search("\'[\s\S]+\'",file).group(0).strip("\\'")
+            if check_file in proguard_list:
+                isValid = False
+                print"WARNING: "+ check_file + " is added to the build.gradle"
+        if isValid:
+            print "SUCCEED."
+        else:
+            print "FAILED."
+
+        print "Added proguard files listed below:\n"
+        for i in range(len(proguard_files)):
+            print  "{0}-) {1}".format(str(i+1),re.search("\'[\s\S]+\'",proguard_files[i]).group(0))
 
 
 
     def APK2(self):
         """
-
         :return:
         """
         print "\n========== APK2 Test ==========\n"
@@ -215,7 +205,6 @@ class ChecklistYigit(object):
 
     def SEC4(self):
         """
-
         :return:
         """
         print "\n========== SEC4 Test ==========\n"

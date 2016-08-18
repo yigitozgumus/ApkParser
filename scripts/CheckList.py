@@ -4,21 +4,31 @@ import yigit
 import berker
 import checkUtil
 import gradleParser
+import ConfigParser
+
 
 class Checklist(object):
-
-    def __init__(self,project_dir,apk_dir):
+    def __init__(self, project_dir, apk_dir):
         self.project_dir = project_dir
         self.apk_dir = apk_dir
-        self.checklist_yigit = yigit.ChecklistYigit(self.project_dir,self.apk_dir)
-        self.checklist_berker = berker.ChecklistBerker(self.project_dir,self.apk_dir)
+        self.checklist_yigit = yigit.ChecklistYigit(self.project_dir, self.apk_dir)
+        self.checklist_berker = berker.ChecklistBerker(self.project_dir, self.apk_dir)
 
     def executeTests(self):
+        config = ConfigParser.ConfigParser()
+
+        config.read('myconfig.ini')
+        print config.sections()
 
         self.checklist_yigit.B2()
         self.checklist_berker.B4()
-        self.checklist_yigit.B5()
-        self.checklist_berker.B6()
+
+        minSdkVersion = config.get('B5', 'minSdkVersion')
+        self.checklist_yigit.B5(minSdkVersion)
+
+        targetSdkVersion = config.get('B6', 'targetSdkVersion')
+        self.checklist_berker.B6(targetSdkVersion)
+
         self.checklist_yigit.B7()
         self.checklist_berker.B7()
         self.checklist_yigit.B8()
@@ -34,12 +44,13 @@ class Checklist(object):
         self.checklist_berker.PERM2()
         self.checklist_yigit.PERM3()
 
-        self.checklist_berker.PRG2()
-        self.checklist_yigit.PRG3()
+        minifyEnabled = config.get('PRG2', 'minifyEnabled')
+        shrinkResources = config.get('PRG2', 'shrinkResources')
+        self.checklist_berker.PRG2(minifyEnabled,shrinkResources)
 
+        self.checklist_yigit.PRG3(['proguard-android.txt', 'proguard-rules.pro'])
         self.checklist_yigit.APK2()
 
-        self.checklist_berker.SEC1()
+        allowBackup = config.get('SEC1','allowBackup')
+        self.checklist_berker.SEC1(allowBackup)
         self.checklist_yigit.SEC4()
-
-

@@ -24,12 +24,14 @@ class ChecklistBerker(object):
         else:
             print "FAILED! Your project name does not start with \"com.monitise.mea\" It starts with " + appId
 
-    def B6(self):
+    def B6(self,configTargetSdk):
         print "\n========== B6 Test ==========\n"
-
+        configTargetSdk
         targetSDK = self.apkf.get_target_sdk_version()
-        print "CONFIRM: Your targetSdkVersion is: " + targetSDK + \
-              ". Please check if this is the most recent api version that app is tested against."
+        if configTargetSdk == targetSDK:
+            print "SUCCESS! Your targetSdkVersion is: " + targetSDK + "."
+        else:
+            print "FAILED! Your targetSdkVersion should be " + configTargetSdk + " but it is " + targetSDK + "."
 
     def B7(self):
         print "\n========== B7 Test ==========\n"
@@ -81,18 +83,22 @@ class ChecklistBerker(object):
             print "\t- " + self.apkf.get_permissions()[counter]
             counter += 1
 
-    def SEC1(self):
+    def SEC1(self,configAllowBackup):
         print "\n========== SEC1 Test ==========\n"
 
         if "@android:allowBackup" in self.manifestDict['manifest']['application']:
             backup = self.manifestDict['manifest']['application']['@android:allowBackup']
-            if backup:
-                print "FAILED! android:allowBackup is set to true."
-                return
+            if backup == configAllowBackup:
+                print "SUCCEED! android:allowBackup is set to " + backup
+            else:
+                print "FAILED! android:allowBackup is set to " + backup + ". But it must be " + configAllowBackup+ "."
+            return
+        elif configAllowBackup:
+            print "FAILED! You need to specift android:allowBackup as true."
+        else:
+            print "SUCCEED! Your android:allowBackup is set to false by default."
 
-        print "SUCCEED! android:allowBackup is set to false.n"
-
-    def PRG2(self):
+    def PRG2(self,configMinifyEn,configShrinkRes):
         print "\n========== PRG2 Test ==========\n"
 
         if "minifyEnabled" in self.gradleDict['android']["buildTypes"]["release"] and \
@@ -101,7 +107,7 @@ class ChecklistBerker(object):
             minifyEnabled = self.gradleDict["android"]["buildTypes"]["release"]["minifyEnabled"][0]
             shrinkResources = self.gradleDict["android"]["buildTypes"]["release"]["shrinkResources"][0]
 
-            if minifyEnabled and shrinkResources:
+            if minifyEnabled == configMinifyEn and shrinkResources == configShrinkRes:
                 print "SUCCEED! minifyEnabled and shrinkResources are set to true."
                 return
 
