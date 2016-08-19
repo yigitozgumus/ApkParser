@@ -34,6 +34,7 @@ class ChecklistYigit(object):
         #TODO release key check will be added
         with working_directory(self.project_dir):
             output =  subprocess.check_output(["./gradlew","signingReport"])
+            print output
             if "BUILD SUCCESSFUL" in output:
                 print "SUCCEED. Signing task build is successful, keys are valid"
             else:
@@ -222,7 +223,7 @@ class ChecklistYigit(object):
             receiver_exist = True
             receivers = self.manifest['manifest']['application']['receiver']
         isValid = True
-        if not(activity_exist):
+        if (activity_exist):
             for check in activities:
                 if 'intent-filter' in check:
                     if '@android:exported' in check:
@@ -234,7 +235,7 @@ class ChecklistYigit(object):
                     else:
                         isValid = False
                         print "CONFIRM: "+ check['@android:name']+ "\t--> Please add android:exported=\"false\" attribute"
-        if not(service_exist):
+        if (service_exist):
             for check in services:
                 if 'intent-filter' in check:
                     if '@android:exported' in check:
@@ -246,7 +247,7 @@ class ChecklistYigit(object):
                     else:
                         isValid = False
                         print "CONFIRM: "+ check['@android:name']+ "\t--> Please add android:exported=\"false\" attribute"
-        if not(receiver_exist):
+        if (receiver_exist):
             for check in receivers:
                 if 'intent-filter' in check:
                     if '@android:exported' in check:
