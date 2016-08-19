@@ -60,8 +60,8 @@ class ChecklistBerker(object):
         if "@android:versionName" in self.manifestDict['manifest']:
             version = self.manifestDict['manifest']['@android:versionName']
             print "CONFIRM: Dismiss if you updated your version. android:versionName is set to: " + version + "."
-
-        print "FAILED! You need to update android:versionName."
+        else:
+            print "FAILED! You need to update android:versionName."
 
     def MAN5(self):
         print "\n========== MAN5 Test ==========\n"
