@@ -2,6 +2,7 @@ from apk_parse.apk import APK
 import string
 from checkUtil import extractXML
 import gradleParser as gr
+import CheckList
 
 
 class ChecklistBerker(object):
@@ -14,93 +15,124 @@ class ChecklistBerker(object):
         self.manifestDict = extractXML(project_dir, apk_dir)
         self.gradleDict = gr.GradleParser(self.project_dir + "/app").parse()
 
-    def B4(self):
-        print "\n========== B4 Test ==========\n"
+    def showResult(self, testId, result, additional):
+        print "\n============ " + testId + " Test ============"
+        print "=="
+        print "==\t" + result + additional
+        print "=="
+        print "=================================\n"
 
+    def B4(self):
+        testId = "B4"
         appId = self.apkf.get_package()
         startingName = "com.monitise.mea."
         if appId.startswith(startingName):
-            print "SUCCEED! Your project name starts with \"com.monitise.mea\"."
+            result = "SUCCEED!"
+            additional = "Your project name starts with \"com.monitise.mea\"."
         else:
-            print "FAILED! Your project name does not start with \"com.monitise.mea\" It starts with " + appId
+            result = "FAILED!"
+            additional = "Your project name does not start with \"com.monitise.mea\" It starts with " + appId
+        self.showResult(testId, result, additional)
 
-    def B6(self,configTargetSdk):
-        print "\n========== B6 Test ==========\n"
+    def B6(self, configTargetSdk):
+        testId = "B6"
         configTargetSdk
         targetSDK = self.apkf.get_target_sdk_version()
         if configTargetSdk == targetSDK:
-            print "SUCCESS! Your targetSdkVersion is: " + targetSDK + "."
+            result = "SUCCESS!"
+            additional = "Your targetSdkVersion is: " + targetSDK + "."
         else:
-            print "FAILED! Your targetSdkVersion should be " + configTargetSdk + " but it is " + targetSDK + "."
+            result = "FAILED!"
+            additional = "Your targetSdkVersion should be " + configTargetSdk + " but it is " + targetSDK + "."
+
+        self.showResult(testId, result, additional)
 
     def B7(self):
-        print "\n========== B7 Test ==========\n"
+        testId = "B7 Test"
 
         for dep in self.gradleDict["dependencies"]["compile"]:
             if "com.google.android.gms:play-services:" in dep:
-                print "FAILED! Google Play Services API should be included as separate dependencies."
+                result =  "FAILED!"
+                additional = "Google Play Services API should be included as separate dependencies."
+                self.showResult(testId,result,additional)
                 return
-
-        print "SUCCEED! Google Play Services API is not included with just one line. (or not included at all)"
+        result = "SUCCEED!"
+        additional = "Google Play Services API is not included with just one line. (or not included at all)"
+        self.showResult(testId,result,additional)
 
     def B9(self):
-        print "\n========== B9 Test ==========\n"
+        testId = "B9"
 
         if self.manifestDict.has_key("debuggable"):
             deb = self.manifestDict['manifest']['application']['@android:debuggable']
             if deb:
-                print "FAILED! debuggable should not be set to true."
+                result = "FAILED!"
+                additional = "debuggable should not be set to true."
+                self.showResult(testId,result,additional)
                 return
-
-        print "SUCCEED! debuggable is not set to true."
+        result = "SUCCEED!"
+        additional = "debuggable is not set to true."
+        self.showResult(testId, result, additional)
 
     def MAN2(self):
-        print "\n========== MAN2 Test ==========\n"
+        testId = "MAN2"
 
         if "@android:versionName" in self.manifestDict['manifest']:
             version = self.manifestDict['manifest']['@android:versionName']
-            print "CONFIRM: Dismiss if you updated your version. android:versionName is set to: " + version + "."
+            result = "CONFIRM:"
+            additional = "Dismiss if you updated your version. android:versionName is set to: " + version + "."
         else:
-            print "FAILED! You need to update android:versionName."
+            result = "FAILED!"
+            additional = "You need to update android:versionName."
+
+        self.showResult(testId, result, additional)
 
     def MAN5(self):
-        print "\n========== MAN5 Test ==========\n"
+        testId = "MAN5"
 
         if "@android:installLocation" in self.manifestDict['manifest']:
             location = self.manifestDict['manifest']['@android:installLocation']
             if location == "externalOnly":
-                print "FAILED! You cannot set android:installLocation to externalOnly."
+                result = "FAILED!"
+                additional = "You cannot set android:installLocation to externalOnly."
+                self.showResult(testId,result,additional)
                 return
-
-        print "SUCCEED! android:installLocation is not set to externalOnly."
+        result = "SUCCEED!"
+        additional = " android:installLocation is not set to externalOnly."
+        self.showResult(testId, result, additional)
 
     def PERM2(self):
-        print "\n========== PERM2 Test ==========\n"
+        testId = "PERM2"
 
-        print "CONFIRM: Check if all the permissions are necessary:"
+        result = "CONFIRM:"
+        additional = "Check if all the permissions are necessary:"
         counter = 0
         for i in self.apkf.get_permissions():
-            print "\t- " + self.apkf.get_permissions()[counter]
+            additional = additional + "\n\t- " + self.apkf.get_permissions()[counter]
             counter += 1
+        self.showResult(testId,result,additional)
 
-    def SEC1(self,configAllowBackup):
-        print "\n========== SEC1 Test ==========\n"
+    def SEC1(self, configAllowBackup):
+        testId = "SEC1"
 
         if "@android:allowBackup" in self.manifestDict['manifest']['application']:
             backup = self.manifestDict['manifest']['application']['@android:allowBackup']
             if backup == configAllowBackup:
-                print "SUCCEED! android:allowBackup is set to " + backup
+                result = "SUCCEED!"
+                additional = "android:allowBackup is set to " + backup
             else:
-                print "FAILED! android:allowBackup is set to " + backup + ". But it must be " + configAllowBackup+ "."
-            return
+                result = "FAILED!"
+                additional = "android:allowBackup is set to " + backup + ". But it must be " + configAllowBackup + "."
         elif configAllowBackup:
-            print "FAILED! You need to specift android:allowBackup as true."
+            result = "FAILED!"
+            additional = "You need to specift android:allowBackup as true."
         else:
-            print "SUCCEED! Your android:allowBackup is set to false by default."
+            result = "SUCCEED!"
+            additional = "Your android:allowBackup is set to false by default."
+        self.showResult(testId,result,additional)
 
-    def PRG2(self,configMinifyEn,configShrinkRes):
-        print "\n========== PRG2 Test ==========\n"
-
+    def PRG2(self, configMinifyEn, configShrinkRes):
+        testId = "PRG2"
         if "minifyEnabled" in self.gradleDict['android']["buildTypes"]["release"] and \
                         "shrinkResources" in self.gradleDict['android']["buildTypes"]["release"]:
 
@@ -108,7 +140,11 @@ class ChecklistBerker(object):
             shrinkResources = self.gradleDict["android"]["buildTypes"]["release"]["shrinkResources"][0]
 
             if minifyEnabled == configMinifyEn and shrinkResources == configShrinkRes:
-                print "SUCCEED! minifyEnabled and shrinkResources are set to true."
+                result = "SUCCEED!"
+                additional = "minifyEnabled and shrinkResources are set to true."
+                self.showResult(testId,result,additional)
                 return
 
-        print "FAILED! minifyEnabled and shrinkResources must be true."
+        result = "FAILED!"
+        additional = "minifyEnabled and shrinkResources must be true."
+        self.showResult(testId,result,additional)
