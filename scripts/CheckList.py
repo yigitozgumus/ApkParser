@@ -18,7 +18,6 @@ class Checklist(object):
         config = ConfigParser.ConfigParser()
 
         config.read('myconfig.ini')
-        print config.sections()
 
         self.checklist_yigit.B2()
         self.checklist_berker.B4()
@@ -48,8 +47,7 @@ class Checklist(object):
         shrinkResources = config.get('PRG2', 'shrinkResources')
         self.checklist_berker.PRG2(minifyEnabled,shrinkResources)
 
-        proguardList = config.get('PRG3' , 'proguardList')
-        self.checklist_yigit.PRG3(proguardList)
+        self.checklist_yigit.PRG3(['proguard-android.txt', 'proguard-rules.pro'])
         self.checklist_yigit.APK2()
 
         allowBackup = config.get('SEC1','allowBackup')

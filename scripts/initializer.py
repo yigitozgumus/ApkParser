@@ -15,7 +15,7 @@ def main():
     if args.tasks :
         tasks = args.tasks
         print tasks
-    apk_extension= "/app/build/outputs/apk/app-release-unsigned.apk"
+    apk_extension= "/app/build/outputs/apk/app-release.apk"
     # apktool_loading()
     tester = cl.Checklist(project,project+apk_extension)
     tester.executeTests()

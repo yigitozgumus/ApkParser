@@ -1,0 +1,61 @@
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    compile 'com.monitise.mea.android:commons-util:2.2.0@aar'
+    compile 'com.monitise.mea.android:commons-ui:2.0.0@aar'
+    compile project(':libraries:TimesSquare')
+    compile project(':libraries:menudrawer')
+    compile project(':libraries:android-spinnerwheel')
+    compile project(':libraries:SlideExpandableListView')
+    compile 'com.google.code.gson:gson:2.7'
+    compile 'com.github.chrisbanes.actionbarpulltorefresh:library:0.7'
+    compile "com.android.support:recyclerview-v7:$rootProject.ext.supportLibVersion"
+    compile "com.android.support:appcompat-v7:$rootProject.ext.supportLibVersion"
+    compile "com.google.android.gms:play-services-maps:$rootProject.ext.playServicesVersion"
+    compile "com.google.android.gms:play-services-analytics:$rootProject.ext.playServicesVersion"
+    
+    compile 'se.emilsjolander:stickylistheaders:2.3.0'
+    compile 'com.squareup.picasso:picasso:2.3.3'
+    compile 'joda-time:joda-time:2.4'
+    compile 'com.jakewharton:butterknife:7.0.1'
+    compile 'org.greenrobot:eventbus:3.0.0'
+    compile 'io.gsonfire:gson-fire:1.5.1'
+    compile 'com.hannesdorfmann.fragmentargs:annotation:3.0.2'
+    apt 'com.hannesdorfmann.fragmentargs:processor:3.0.2'
+
+
+    compile 'frankiesardo:icepick:3.2.0'
+    provided 'frankiesardo:icepick-processor:3.2.0'
+}
+
+monitise {
+    projectName 'sample_app'
+    checkstyle {
+        ignoreFailures true
+        skip false
+        showViolations false
+        configUrl '../test/checkstyle-test.xml'
+        exclude = ['*/ActMain.java']
+    }
+    findbugs {
+        ignoreFailures true
+        skip false
+        excludeFilter '../test/findbugs-exclude-local.xml'
+    }
+    appOptions {
+        useMonitiseProguard true
+        codeEncryption {
+            enabled true
+            projectName 'Android-Sample'
+            password 'sample_app'
+        }
+    }
+}
+
+ext {
+    compileSdkVersion = 23
+    buildToolsVersion = "23.0.2"
+    minSdkVersion = 15
+    targetSdkVersion = 23
+}
