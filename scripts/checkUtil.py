@@ -29,7 +29,7 @@ def extractXML(project_dir, apk_location):
         subprocess.check_output(["./gradlew", "assembleRelease"])
     with working_directory("/tmp"):
         subprocess.call(["apktool", "d", apk_location])
-    with working_directory("/tmp" + "/app-release/"):
+    with working_directory("/tmp" + "/app-release-unsigned/"):
         with open("AndroidManifest.xml") as fd:
             obj_file = xmltodict.parse(fd.read())
             return ast.literal_eval(json.dumps(obj_file))
