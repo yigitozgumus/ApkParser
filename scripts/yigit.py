@@ -222,7 +222,7 @@ class ChecklistYigit(object):
             receiver_exist = True
             receivers = self.manifest['manifest']['application']['receiver']
         isValid = True
-        if not(activities == None):
+        if not(activity_exist):
             for check in activities:
                 if 'intent-filter' in check:
                     if '@android:exported' in check:
@@ -234,7 +234,7 @@ class ChecklistYigit(object):
                     else:
                         isValid = False
                         print "CONFIRM: "+ check['@android:name']+ "\t--> Please add android:exported=\"false\" attribute"
-        if not(services == None):
+        if not(service_exist):
             for check in services:
                 if 'intent-filter' in check:
                     if '@android:exported' in check:
@@ -246,7 +246,7 @@ class ChecklistYigit(object):
                     else:
                         isValid = False
                         print "CONFIRM: "+ check['@android:name']+ "\t--> Please add android:exported=\"false\" attribute"
-        if not(receivers == None):
+        if not(receiver_exist):
             for check in receivers:
                 if 'intent-filter' in check:
                     if '@android:exported' in check:
