@@ -14,10 +14,10 @@ class Checklist(object):
         self.checklist_yigit = yigit.ChecklistYigit(self.project_dir, self.apk_dir)
         self.checklist_berker = berker.ChecklistBerker(self.project_dir, self.apk_dir)
 
-    def executeTests(self):
+    def executeTests(self,config_location):
         config = ConfigParser.ConfigParser()
 
-        config.read('myconfig.ini')
+        config.read(config_location)
 
         self.checklist_yigit.B2()
         self.checklist_berker.B4()

@@ -96,7 +96,7 @@ class GradleParserNew(object):
                 current_node = self.dictionary_list.pop()
 
                 if len(self.dictionary_list) > 1:
-                    
+
                     parent_node = self.dictionary_list[-1]
                     self.gradle_dict[parent_node][current_node].append(self.gradle_dict[current_node])
                     del self.gradle_dict[current_node]

@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-from checkUtil import working_directory
-from checkUtil import extractXML
-from apk_parse import apk
-from collections import defaultdict
-import subprocess
-import gradleParser_v2 as gr
-import re
 import os
+import re
+import subprocess
+
+import gradleParser_v2 as gr
+from apk_parse import apk
+from checkUtil import extractXML
+from checkUtil import working_directory
 
 
 class ChecklistYigit(object):

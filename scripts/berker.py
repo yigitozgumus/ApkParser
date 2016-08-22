@@ -1,8 +1,6 @@
-from apk_parse.apk import APK
-import string
-from checkUtil import extractXML
 import gradleParser_v2 as gr
-import CheckList
+from apk_parse.apk import APK
+from checkUtil import extractXML
 
 
 class ChecklistBerker(object):
@@ -143,8 +141,8 @@ class ChecklistBerker(object):
 
             minifyEnabled = self.gradleDict["android"]["buildTypes"][0]["release"][0]["minifyEnabled"][0]
             shrinkResources = self.gradleDict["android"]["buildTypes"][0]["release"][0]["shrinkResources"][0]
-            minifyEnabled = minifyEnabled.lower()
-            shrinkResources = shrinkResources.lower()
+            minifyEnabled = minifyEnabled[0].lower()
+            shrinkResources = shrinkResources[0].lower()
             if minifyEnabled == configMinifyEn and shrinkResources == configShrinkRes:
                 result = "SUCCEED!"
                 additional = "minifyEnabled and shrinkResources are set to true."

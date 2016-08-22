@@ -1,17 +1,18 @@
-#!/usr/bin/env python
+#!/usr/local/bin/python
 
 
 import argparse
 import sys
 import urllib2
-from checkUtil import working_directory
+from scripts.checkUtil import working_directory
 from subprocess import call
 from subprocess import check_output
-import CheckList as cl
+import scripts.CheckList as cl
 
 def main():
     args = parse_parameters(sys.argv)
     project = args.dir
+    config = args.config
     tasks = ''
     if args.tasks :
         tasks = args.tasks
@@ -22,7 +23,9 @@ def main():
     except:
         apktool_loading()
     tester = cl.Checklist(project,project+apk_extension)
-    tester.executeTests()
+    tester.executeTests(config)
+    with working_directory("/tmp"):
+        check_output(["rm","-rf","/app-release"])
 
 
 
@@ -56,6 +59,9 @@ def parse_parameters(argv):
     parser.add_argument('-d','--dir',
                         nargs='?',
                         help='Directory location')
+    parser.add_argument('-c', '--config',
+                        nargs='?',
+                        help='Config File Location')
     parser.add_argument('-t','--tasks',
                         nargs=1,
                         help='Optional task file to import check functions')
