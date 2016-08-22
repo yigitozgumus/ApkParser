@@ -1,8 +1,11 @@
 import os
+import os.path as path
+
+import subprocess
 
 import gradleParser_v2 as gr
 from apk_parse.apk import APK
-from checkUtil import extractXML
+from checkUtil import extractXML, working_directory
 
 
 class ChecklistBerker(object):
@@ -185,6 +188,48 @@ class ChecklistBerker(object):
             return;
 
             # todo checkb2 here
+        signing_report = []
+        split_string = ":app:signingReport"
+        with working_directory(self.project_dir):
+            output = subprocess.check_output(["./gradlew", "signingReport"])
+            signing_report = output.split("\n")
+        # parse result
+        signing_report = signing_report[signing_report.index(split_string) + 1:]
+        signing_report = [el for el in signing_report if "Error" in el]
+        if len(signing_report) == 0:
+            result = "SUCCEED."
+            additional = "Signing task build is successful, keys are valid"
+        else:
+            result = "FAILED."
+            additional = "Please check assigned keys"
+        self.showResult(testId, result, additional)
+
+    def SIGN3(self):
+        testId = "SIGN3"
+        keyPath = ''
+
+        try:
+            keyPath = self.gradle['android']['signingConfigs'][0]['release'][0]['storeFile'][0][0]
+        except:
+            result = "FAILED!"
+            additional = "There is no given path for release keystore file"
+            self.showResult(testId, result, additional)
+            return
+
+        if path.exists(keyPath):
+            if "/build/" in keyPath:
+                result = "FAILED"
+                additional = " Your release keystore is in build classpath."
+            else:
+                result = "SUCCEED!"
+                additional = "Your release keystore is not in build classpath."
+
+            self.showResult(testId, result, additional)
+        else:
+            result = "FAILED!"
+            additional = " There is no release keystore in the project!"
+            self.showResult(testId, result, additional)
+
 
     def PRG1(self, proguard_list):
         # prgList = [line.strip() for line in open(self.project_dir+"/app/proguard-rules.pro", "r")]
