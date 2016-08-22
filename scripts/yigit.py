@@ -192,7 +192,7 @@ class ChecklistYigit(object):
                 if "@android:name" in feature:
                     feature_name = feature['@android:name']
                     if "hardware" in feature_name:
-                        if not (feature['@android:required'] == "False"):
+                        if not (feature['@android:required'].lower() == "false"):
                             isValid = False
                             result = "FAILED."
                             additional = "Please change " + feature['@android:name'] + " requirement to False"
@@ -277,7 +277,7 @@ class ChecklistYigit(object):
             for check in activities:
                 if 'intent-filter' in check:
                     if '@android:exported' in check:
-                        if check['@android:exported'] == 'false' in check:
+                        if check['@android:exported'].lower() == 'false' in check:
                             pass
                         else:
                             isValid = False
@@ -291,7 +291,7 @@ class ChecklistYigit(object):
             for check in services:
                 if 'intent-filter' in check:
                     if '@android:exported' in check:
-                        if check['@android:exported'] == 'false' in check:
+                        if check['@android:exported'].lower() == 'false' in check:
                             pass
                         else:
                             isValid = False
@@ -305,7 +305,7 @@ class ChecklistYigit(object):
             for check in receivers:
                 if 'intent-filter' in check:
                     if '@android:exported' in check:
-                        if check['@android:exported'] == 'false' in check:
+                        if check['@android:exported'].lower() == 'false' in check:
                             pass
                         else:
                             isValid = False

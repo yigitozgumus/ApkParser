@@ -49,26 +49,25 @@ class ChecklistBerker(object):
 
     def B7(self):
         testId = "B7 Test"
-
         for dep in self.gradleDict["dependencies"]["compile"]:
             if "com.google.android.gms:play-services:" in dep:
-                result =  "FAILED!"
+                result = "FAILED!"
                 additional = "Google Play Services API should be included as separate dependencies."
-                self.showResult(testId,result,additional)
+                self.showResult(testId, result, additional)
                 return
         result = "SUCCEED!"
         additional = "Google Play Services API is not included with just one line. (or not included at all)"
-        self.showResult(testId,result,additional)
+        self.showResult(testId, result, additional)
 
     def B9(self):
         testId = "B9"
-
-        if self.manifestDict.has_key("debuggable"):
+        if '@android:debuggable' in self.manifestDict['manifest']['application']:
             deb = self.manifestDict['manifest']['application']['@android:debuggable']
-            if deb:
+            deb = deb.lower()
+            if deb == "true":
                 result = "FAILED!"
                 additional = "debuggable should not be set to true."
-                self.showResult(testId,result,additional)
+                self.showResult(testId, result, additional)
                 return
         result = "SUCCEED!"
         additional = "debuggable is not set to true."
@@ -95,7 +94,7 @@ class ChecklistBerker(object):
             if location == "externalOnly":
                 result = "FAILED!"
                 additional = "You cannot set android:installLocation to externalOnly."
-                self.showResult(testId,result,additional)
+                self.showResult(testId, result, additional)
                 return
         result = "SUCCEED!"
         additional = " android:installLocation is not set to externalOnly."
@@ -110,41 +109,48 @@ class ChecklistBerker(object):
         for i in self.apkf.get_permissions():
             additional = additional + "\n==\t- " + self.apkf.get_permissions()[counter]
             counter += 1
-        self.showResult(testId,result,additional)
+        self.showResult(testId, result, additional)
 
     def SEC1(self, configAllowBackup):
         testId = "SEC1"
+        configAllowBackup = configAllowBackup.lower()
 
         if "@android:allowBackup" in self.manifestDict['manifest']['application']:
             backup = self.manifestDict['manifest']['application']['@android:allowBackup']
+            backup = backup.lower()
+            configAllowBackup = configAllowBackup.lower()
             if backup == configAllowBackup:
                 result = "SUCCEED!"
                 additional = "android:allowBackup is set to " + backup
             else:
                 result = "FAILED!"
                 additional = "android:allowBackup is set to " + backup + ". But it must be " + configAllowBackup + "."
-        elif configAllowBackup:
+        elif configAllowBackup == "true":
             result = "FAILED!"
-            additional = "You need to specift android:allowBackup as true."
+            additional = "You need to specify android:allowBackup as true."
         else:
             result = "SUCCEED!"
             additional = "Your android:allowBackup is set to false by default."
-        self.showResult(testId,result,additional)
+        self.showResult(testId, result, additional)
 
     def PRG2(self, configMinifyEn, configShrinkRes):
         testId = "PRG2"
+        configMinifyEn = configMinifyEn.lower()
+        configShrinkRes = configShrinkRes.lower()
+
         if "minifyEnabled" in self.gradleDict['android']["buildTypes"][0]["release"][0] and \
                         "shrinkResources" in self.gradleDict['android']["buildTypes"][0]["release"][0]:
 
             minifyEnabled = self.gradleDict["android"]["buildTypes"][0]["release"][0]["minifyEnabled"][0]
             shrinkResources = self.gradleDict["android"]["buildTypes"][0]["release"][0]["shrinkResources"][0]
-
+            minifyEnabled = minifyEnabled.lower()
+            shrinkResources = shrinkResources.lower()
             if minifyEnabled == configMinifyEn and shrinkResources == configShrinkRes:
                 result = "SUCCEED!"
                 additional = "minifyEnabled and shrinkResources are set to true."
-                self.showResult(testId,result,additional)
+                self.showResult(testId, result, additional)
                 return
 
         result = "FAILED!"
         additional = "minifyEnabled and shrinkResources must be true."
-        self.showResult(testId,result,additional)
+        self.showResult(testId, result, additional)
