@@ -1,3 +1,5 @@
+import os
+
 import gradleParser_v2 as gr
 from apk_parse.apk import APK
 from checkUtil import extractXML
@@ -19,6 +21,48 @@ class ChecklistBerker(object):
         print "==\t" + result + additional
         print "=="
         print "==================================================================\n"
+
+    def B1(self, configResConfig_list):
+        testId = "B1"
+        found = False
+        resConf_filtered = configResConfig_list.split(",")
+        resConf_filtered = [x.strip(" ") for x in resConf_filtered]
+
+        if "resConfigs" in self.gradleDict['android']["defaultConfig"][0]:
+            for i in self.gradleDict['android']["defaultConfig"][0]["resConfigs"][0]:
+                for conf in resConf_filtered:
+                    if i.lower() == conf.lower():
+                        found = True
+                        break  # found in the config
+                if not found:
+                    result = "FAILED!"
+                    additional = " In your resConfigs, you have: " + i + " but not in config file."
+                    self.showResult(testId, result, additional)
+                    return
+                else:
+                    found = False
+
+            for conf in resConf_filtered:
+                for i in self.gradleDict['android']["defaultConfig"][0]["resConfigs"][0]:
+                    if i.lower() == conf.lower():
+                        found = True
+                        break  # found in the config
+                if not found:
+                    result = "FAILED!"
+                    additional = " In your config file, you have: " + conf + " but not in manifest."
+                    self.showResult(testId, result, additional)
+                    return
+                else:
+                    found = False
+        else:
+            result = "CONFIRM:"
+            additional = " You dont have resConfigs in your project."
+            self.showResult(testId, result, additional)
+            return
+
+        result = "SUCCEED!"
+        additional = " Your resConfigs in config file match with the ones in the manifest."
+        self.showResult(testId, result, additional)
 
     def B4(self):
         testId = "B4"
@@ -130,6 +174,55 @@ class ChecklistBerker(object):
             result = "SUCCEED!"
             additional = "Your android:allowBackup is set to false by default."
         self.showResult(testId, result, additional)
+
+    def SIGN1(self):
+        testId = "SIGN1"
+
+        if not os.path.exists(self.project_dir + "/release.keystore.jks"):
+            result = "FAILED!"
+            additional = " release.keystore.jks does not exist in your project path."
+            self.showResult(testId, result, additional)
+            return;
+
+            # todo checkb2 here
+
+    def PRG1(self, proguard_list):
+        # prgList = [line.strip() for line in open(self.project_dir+"/app/proguard-rules.pro", "r")]
+        testId = "PRG1"
+        functs = ["public static boolean isLoggable(java.lang.String, int);",
+                  "public static int v(...);",
+                  "public static int i(...);",
+                  "public static int w(...);",
+                  "public static int d(...);",
+                  "public static int e(...);"]
+
+        gradlePrgList = self.gradleDict["android"]["buildTypes"][0]["release"][0]["proguardFiles"][0]
+
+        for fileIndex in range(len(gradlePrgList)):
+
+            if not os.path.exists(self.project_dir + "/app/" + gradlePrgList[fileIndex]):
+                continue
+
+            prgList = [line.strip() for line in open(self.project_dir + "/app/" + gradlePrgList[fileIndex], "r")]
+            prgList = [x.strip(" ") for x in prgList]
+            for i in range(len(prgList)):
+                if prgList[i].startswith("-assumenosideeffects class android.util.Log {"):
+                    i += 1
+                    for k in range(len(functs)):
+                        if not i + k < len(prgList):
+                            break
+                        if not prgList[i + k].startswith(functs[k]):
+                            break
+                        if k == len(functs) - 1:
+                            result = "SUCCEED"
+                            additional = "You have proper functions to disable logging in " + gradlePrgList[
+                                fileIndex] + "."
+                            self.showResult(testId,result,additional)
+                            return
+
+        result = "FAILED!"
+        additional = "You forgot to disable logging in proguard configurations."
+        self.showResult(testId,result,additional)
 
     def PRG2(self, configMinifyEn, configShrinkRes):
         testId = "PRG2"
