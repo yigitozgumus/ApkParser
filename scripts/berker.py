@@ -1,7 +1,7 @@
 from apk_parse.apk import APK
 import string
 from checkUtil import extractXML
-import gradleParser as gr
+import gradleParser_v2 as gr
 import CheckList
 
 
@@ -13,7 +13,7 @@ class ChecklistBerker(object):
         self.apkf = APK(apk_dir)
 
         self.manifestDict = extractXML(project_dir, apk_dir)
-        self.gradleDict = gr.GradleParser(self.project_dir + "/app").parse()
+        self.gradleDict = gr.GradleParserNew(self.project_dir + "/app").parse(False)
 
     def showResult(self, testId, result, additional):
         print "\n============ " + testId + " Test ============"
@@ -133,11 +133,11 @@ class ChecklistBerker(object):
 
     def PRG2(self, configMinifyEn, configShrinkRes):
         testId = "PRG2"
-        if "minifyEnabled" in self.gradleDict['android']["buildTypes"]["release"] and \
-                        "shrinkResources" in self.gradleDict['android']["buildTypes"]["release"]:
+        if "minifyEnabled" in self.gradleDict['android']["buildTypes"][0]["release"][0] and \
+                        "shrinkResources" in self.gradleDict['android']["buildTypes"][0]["release"][0]:
 
-            minifyEnabled = self.gradleDict["android"]["buildTypes"]["release"]["minifyEnabled"][0]
-            shrinkResources = self.gradleDict["android"]["buildTypes"]["release"]["shrinkResources"][0]
+            minifyEnabled = self.gradleDict["android"]["buildTypes"][0]["release"][0]["minifyEnabled"][0]
+            shrinkResources = self.gradleDict["android"]["buildTypes"][0]["release"][0]["shrinkResources"][0]
 
             if minifyEnabled == configMinifyEn and shrinkResources == configShrinkRes:
                 result = "SUCCEED!"

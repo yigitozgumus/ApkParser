@@ -3,7 +3,7 @@
 import yigit
 import berker
 import checkUtil
-import gradleParser
+import gradleParser_v2
 import ConfigParser
 
 

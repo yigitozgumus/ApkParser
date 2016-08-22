@@ -27,9 +27,9 @@
 
 import gradleParser_v2 as gr
 
-test = gr.gradleParserNew(".")
+test = gr.GradleParserNew(".")
 
-test2 = test.parse()
+test2 = test.parse(True)
 
-import json
-print json.dumps(test2,sort_keys=True,indent=4)
+print test2
+

@@ -3,8 +3,9 @@
 from checkUtil import working_directory
 from checkUtil import extractXML
 from apk_parse import apk
+from collections import defaultdict
 import subprocess
-import gradleParser
+import gradleParser_v2 as gr
 import re
 import os
 
@@ -23,7 +24,7 @@ class ChecklistYigit(object):
         self.apk_dir = apk_dir
         self.manifest = extractXML(project_dir, apk_dir)
         self.apkf_inspect = apk.APK(apk_dir)
-        self.gradle = gradleParser.GradleParser(self.project_dir + "/app").parse()
+        self.gradle = gr.GradleParserNew(self.project_dir + "/app").parse(False)
 
     def showResult(self, testId, result, additional):
         print "\n============ " + testId + " Test ============"
@@ -39,18 +40,23 @@ class ChecklistYigit(object):
         :return: to be documented
         """
         testId = "B2"
-        # TODO release key check will be added
+        signing_report = []
+        split_string = ":app:signingReport"
         with working_directory(self.project_dir):
             output = subprocess.check_output(["./gradlew", "signingReport"])
-            print output
-            if "BUILD SUCCESSFUL" in output:
-                result = "SUCCEED."
-                additional = "Signing task build is successful, keys are valid"
-            else:
-                result = "FAILED."
-                additional = "Please check assigned keys"
-            self.showResult(testId, result, additional)
-
+            signing_report = output.split("\n")
+        #parse result
+        signing_report = signing_report[signing_report.index(split_string)+1:]
+        signing_report = [el for el in signing_report if "Error" in el]
+        if len(signing_report) == 0:
+            result = "SUCCEED."
+            additional = "Signing task build is successful, keys are valid"
+        else:
+            result = "FAILED."
+            additional = "Please check assigned keys"
+        self.showResult(testId, result, additional)
+        for i in signing_report:
+            print i
     def createAPK(self):
         """
         :return:
@@ -85,7 +91,7 @@ class ChecklistYigit(object):
         # TODO ask the checklist item
         if (not self.is_apk_created):
             self.createAPK()
-        compile_sdk = self.gradle["android"]["compileSdkVersion"][0]
+        compile_sdk = self.gradle["android"]["compileSdkVersion"][0][0]
         result = "SUCCEED."
         additional = "Project compileSdkVersion is " + compile_sdk + ". Check for behavioral changes accordingly"
 
@@ -97,11 +103,11 @@ class ChecklistYigit(object):
         """
         #TODO print
         testId = "B8"
-        dependencies = self.gradle["dependencies"]["compile"]
+        dependencies = [ x for x in self.gradle["dependencies"]["compile"] if len(x) == 1]
         result = ""
         is_valid = True
         for dependency in dependencies:
-            if not (re.search("\d+.\+", dependency) == None):
+            if not (re.search("\d+.\+", dependency[0]) == None):
                 is_valid = False
                 result = "CONFIRM: Please check the latest version of " + dependency[1:-1]
         if is_valid:
@@ -119,7 +125,7 @@ class ChecklistYigit(object):
         """
         testId = "MAN1"
         # TODO How to read previous version code ?
-        versionCode = self.gradle['android']['defaultConfig']['versionCode'][0]
+        versionCode = self.gradle['android']['defaultConfig'][0]['versionCode'][0][0]
         result = "CONFIRM:"
         additional = "Current version code is " + versionCode
 
@@ -130,8 +136,8 @@ class ChecklistYigit(object):
         :return:
         """
         testId = "MAN3"
-        version_name = self.gradle["android"]["defaultConfig"]["versionName"][0]
-        versions = version_name.split(".")
+        version_name = self.gradle["android"]["defaultConfig"][0]["versionName"][0]
+        versions = version_name[0].split(".")
         if (not (len(versions) == 4)):
             result = "FAILED."
             additional = "Version name does not follow <major>.<minor>.<patch>.<buildNumber> convention."
@@ -202,13 +208,13 @@ class ChecklistYigit(object):
         """
         # todo change print version
         print "\n========== PRG3 Test ==========\n"
-        proguard_files = self.gradle["android"]["buildTypes"]["release"]["proguardFiles"]
+        proguard_files = self.gradle["android"]["buildTypes"][0]["release"][0]["proguardFiles"][0]
         isValid = True
+        proguard_files.remove("getDefaultProguardFile")
         for file in proguard_files:
-            check_file = re.search("\'[\s\S]+\'", file).group(0).strip("\\'")
-            if check_file in proguard_list:
+            if file in proguard_list:
                 isValid = False
-                print"WARNING: " + check_file + " is added to the build.gradle"
+                print"WARNING: " + file + " is added to the build.gradle"
         if isValid:
             print "SUCCEED."
         else:
@@ -216,7 +222,7 @@ class ChecklistYigit(object):
 
         print "Added proguard files listed below:\n"
         for i in range(len(proguard_files)):
-            print  "{0}-) {1}".format(str(i + 1), re.search("\'[\s\S]+\'", proguard_files[i]).group(0))
+            print  "{0}-) {1}".format(str(i + 1), proguard_files[i])
 
     def APK2(self):
         """

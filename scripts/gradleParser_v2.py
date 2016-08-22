@@ -3,10 +3,10 @@
 from checkUtil import working_directory
 from collections import defaultdict
 import tokenize
-from io import BytesIO
+import json
 
 
-class gradleParserNew(object):
+class GradleParserNew(object):
     """
 
     This class will parse standard build gradle file and create a nested dictionary
@@ -31,7 +31,12 @@ class gradleParserNew(object):
                 self.token_list.append(self.tokens_initial[i])
         self.token_list.reverse()
 
-    def parse(self):
+    def parse(self,will_xml):
+        """
+        This method parses the given token_list object and returns either xml or nested dictionary
+        @param will_xml: return the result as xml if given true
+        @return: nested dictionary or xml object
+        """
         # first dictionary initialization
         self.gradle_dict[self.dictionary_list[0]] = defaultdict(list)
         while not (len(self.token_list) == 0):
@@ -43,19 +48,17 @@ class gradleParserNew(object):
             # containment checks
             if (len(parse_line) == 1 and self.checkElements(parse_line, ['\\n'])):
                 pass
-
+            #special case, mavens
             elif (self.checkElements(parse_line, ["{"]) and self.checkElements(parse_line, ["}"])):
-
                 new_dict = parse_line[0][1]
                 parent_node = self.dictionary_list[-1]
-
                 if (not (new_dict in self.gradle_dict[parent_node].keys())):
                     self.gradle_dict[parent_node][new_dict] = defaultdict(list)
-
                 element_list = self.purifyElements(parse_line, ["{", "}"])
                 self.gradle_dict[parent_node][new_dict][element_list[1]].append(element_list[2:-1])
-
+            # New nested dictionary node opening
             elif (self.checkElements(parse_line, ["{"])):
+                # Special case, compiles
                 if (self.checkElements(parse_line, ["(", ")"])):
                     element_list = self.purifyElements(parse_line, ["(", ")"])
                     new_dict = element_list[1]
@@ -65,6 +68,7 @@ class gradleParserNew(object):
                     new_dict = parse_line[0][1]
                     self.dictionary_list.append(new_dict)
                     self.gradle_dict[new_dict] = defaultdict(list)
+            # Nested dictionary element addition
             elif (not (self.checkElements(parse_line, ["{", "}"]))):
                 current_node = self.gradle_dict[self.dictionary_list[-1]]
                 element_list = self.purifyElements(parse_line, ["=", ":", ",", ";", "file", "(", ")"])
@@ -78,8 +82,9 @@ class gradleParserNew(object):
                     current_node[element_list[0]].append(element_list[0])
 
                 else:
+                    element_list = self.purifyElements(element_list,['[',']',':',','])
                     current_node[element_list[0]].append(element_list[1:-1])
-
+            # Dictionary closing
             elif (self.checkElements(parse_line, ["}"])):
 
                 current_node = self.dictionary_list.pop()
@@ -88,11 +93,14 @@ class gradleParserNew(object):
                     parent_node = self.dictionary_list[-1]
                     self.gradle_dict[parent_node][current_node].append(self.gradle_dict[current_node])
                     del self.gradle_dict[current_node]
-
+        # Replace root project version if any exists
         if("ext" in self.gradle_dict.keys()):
             self.parse_versions()
 
-        return self.gradle_dict
+        if(will_xml):
+            return json.dumps(self.gradle_dict,sort_keys=True,indent=4)
+        else:
+            return self.gradle_dict
 
     def parse_versions(self):
         """
@@ -118,7 +126,7 @@ class gradleParserNew(object):
     def checkElements(self, elements, target_list):
         """
         Checks whether any element in target_list exists in elements
-        @param element:
+        @param elements: given element list, list or list of tuples
         @param target_list:
         @return:
         """
@@ -135,8 +143,8 @@ class gradleParserNew(object):
     def getElements(self, elements):
         """
         returns list of real elements without token tags
-        @param elements:
-        @return:
+        @param elements: list of tuples
+        @return: list of elements
         """
         if type(elements[0]) == tuple:
             return [val2 for (val1, val2) in elements]
@@ -146,9 +154,9 @@ class gradleParserNew(object):
     def purifyElements(self, elements, filter_list):
         """
         removes unwanted elements from the list if they exist
-        @param elements:
-        @param filter_list:
-        @return:
+        @param elements: target element list
+        @param filter_list: elements to be filtered
+        @return: filtered list
         """
         el_lst = self.getElements(elements)
         for el in filter_list:
