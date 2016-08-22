@@ -3,8 +3,9 @@
 import os
 import re
 import subprocess
-
+from subprocess import check_output
 import gradleParser_v2 as gr
+import os.path as path
 from apk_parse import apk
 from checkUtil import extractXML
 from checkUtil import working_directory
@@ -214,10 +215,12 @@ class ChecklistYigit(object):
         result = "\n"
         additional = ""
         proguard_files = self.gradle["android"]["buildTypes"][0]["release"][0]["proguardFiles"][0]
+        proguard_list_filtered = proguard_list.split(",")
+        proguard_list_filtered = [x.strip(" ") for x in proguard_list_filtered]
         isValid = True
         proguard_files.remove("getDefaultProguardFile")
         for file in proguard_files:
-            if file in proguard_list:
+            if file in proguard_list_filtered:
                 isValid = False
                 result = result + "==\tWARNING: " + file + " is added to the build.gradle\n"
         if isValid:
@@ -322,3 +325,70 @@ class ChecklistYigit(object):
             result = result + "==\tFAILED."
 
         self.showResult(testId,result,"")
+
+    def GEN2(self):
+        """
+
+        @return:
+        """
+        testId = "GEN2"
+
+    def GEN4(self,apk_location,sdk_location):
+        """
+        runs aapt command and verifies permissions, locales and densities supported
+        @return:
+        """
+        testId = "GEN4"
+        with working_directory(sdk_location):
+            output = check_output(["./aapt","d","badging",self.project_dir+apk_location])
+        # information extraction
+        list = output.split("\n")
+        print [x for x in list if "permission" in x]
+
+
+
+    def MAN4(self):
+        """
+
+        @return:
+        """
+        testId = "MAN4"
+
+    def SIGN2(self):
+        """
+        This test makes sure the release keystore is included in source control
+        @return:
+        """
+        testId = "SIGN2"
+        keystore_path = ''
+        try:
+          keystore_path =  self.gradle['android']['signingConfigs'][0]['release'][0]['storeFile'][0][0]
+        except:
+            result = "FAILED."
+            additional = "There is no given path for Release Keystore file"
+            self.showResult(testId,result,additional)
+            return
+        if(path.exists(keystore_path)):
+            result = "SUCCEED."
+            additional = "Keystore file is included in source Control."
+            self.showResult(testId,result,additional)
+        else:
+            result = "FAILED."
+            additional = "Keystore file isn't included in source Control"
+            self.showResult(testId,result,additional)
+
+
+    def CQ1(self):
+        """
+
+        @return:
+        """
+        testId = "CQ1"
+
+    def APK1(self):
+        """
+
+        @return:
+        """
+        testId = "APK1"
+
