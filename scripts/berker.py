@@ -16,11 +16,11 @@ class ChecklistBerker(object):
         self.gradleDict = gr.GradleParserNew(self.project_dir + "/app").parse(False)
 
     def showResult(self, testId, result, additional):
-        print "\n============ " + testId + " Test ============"
+        print "\n\n============ " + testId + " Test ==========================================="
         print "=="
         print "==\t" + result + additional
         print "=="
-        print "=================================\n"
+        print "==================================================================\n"
 
     def B4(self):
         testId = "B4"
@@ -108,7 +108,7 @@ class ChecklistBerker(object):
         additional = "Check if all the permissions are necessary:"
         counter = 0
         for i in self.apkf.get_permissions():
-            additional = additional + "\n\t- " + self.apkf.get_permissions()[counter]
+            additional = additional + "\n==\t- " + self.apkf.get_permissions()[counter]
             counter += 1
         self.showResult(testId,result,additional)
 

@@ -27,11 +27,11 @@ class ChecklistYigit(object):
         self.gradle = gr.GradleParserNew(self.project_dir + "/app").parse(False)
 
     def showResult(self, testId, result, additional):
-        print "\n============ " + testId + " Test ============"
+        print "\n\n============ " + testId + " Test ==========================================="
         print "=="
         print "==\t" + result + additional
         print "=="
-        print "=================================\n"
+        print "==================================================================\n"
 
     def B2(self):
         """
@@ -45,8 +45,8 @@ class ChecklistYigit(object):
         with working_directory(self.project_dir):
             output = subprocess.check_output(["./gradlew", "signingReport"])
             signing_report = output.split("\n")
-        #parse result
-        signing_report = signing_report[signing_report.index(split_string)+1:]
+        # parse result
+        signing_report = signing_report[signing_report.index(split_string) + 1:]
         signing_report = [el for el in signing_report if "Error" in el]
         if len(signing_report) == 0:
             result = "SUCCEED."
@@ -57,6 +57,7 @@ class ChecklistYigit(object):
         self.showResult(testId, result, additional)
         for i in signing_report:
             print i
+
     def createAPK(self):
         """
         :return:
@@ -81,7 +82,7 @@ class ChecklistYigit(object):
             result = "FAILED."
             additional = "Test failed. Your project's minimum sdk is not " + config_minSdk + ", it is " + min_sdk + ". "
 
-        self.showResult(testId,result,additional)
+        self.showResult(testId, result, additional)
 
     def B7(self):
         """
@@ -95,15 +96,15 @@ class ChecklistYigit(object):
         result = "SUCCEED."
         additional = "Project compileSdkVersion is " + compile_sdk + ". Check for behavioral changes accordingly"
 
-        self.showResult(testId,result,additional)
+        self.showResult(testId, result, additional)
 
     def B8(self):
         """
         :return:
         """
-        #TODO print
+        # TODO print
         testId = "B8"
-        dependencies = [ x for x in self.gradle["dependencies"]["compile"] if len(x) == 1]
+        dependencies = [x for x in self.gradle["dependencies"]["compile"] if len(x) == 1]
         result = ""
         is_valid = True
         for dependency in dependencies:
@@ -117,7 +118,7 @@ class ChecklistYigit(object):
             result += "\nFAILED."
             additional = "Test failed."
 
-        self.showResult(testId,result,additional)
+        self.showResult(testId, result, additional)
 
     def MAN1(self):
         """
@@ -129,7 +130,7 @@ class ChecklistYigit(object):
         result = "CONFIRM:"
         additional = "Current version code is " + versionCode
 
-        self.showResult(testId,result,additional)
+        self.showResult(testId, result, additional)
 
     def MAN3(self):
         """
@@ -150,7 +151,7 @@ class ChecklistYigit(object):
         """
         :return:
         """
-        print "\n========== SIGN4 Test ==========\n"
+        testId = "SIGN4"
         # TODO improve test logic.
         # todo change print version
         if "config" in self.gradle['android']['signingConfigs']:
@@ -158,18 +159,20 @@ class ChecklistYigit(object):
             num_configs = len(config_values.keys())
             isValid = True
             if (num_configs < 4):
-                print "FAILED. all values for the signingConfig are not defined.\n Defined are below:\n"
+                result = "FAILED. all values for the signingConfig are not defined.\n Defined are below:\n"
                 for key in config_values.keys():
-                    print "the key name is" + key + "and its value is" + config_values[key][0][1:-1]
+                    result = result + "==\tthe key name is" + key + "and its value is" + config_values[key][0][1:-1]
                 return
             for check in config_values.keys():
                 if (len(config_values[check]) == 0):
-                    print "Check " + check + " value"
+                    result = result + "\n==\tCheck " + check + " value"
                     isValid = False
             if (isValid):
-                print "SUCCEED. All signingConfig values are valid"
+                result = "SUCCEED. All signingConfig values are valid"
         else:
-            print "FAILED. There is no config value in signingConfigs tag in your project."
+            result = "FAILED. There is no config value in signingConfigs tag in your project."
+
+        self.showResult(testId, result, "")
 
     def PERM3(self):
         """
@@ -197,32 +200,36 @@ class ChecklistYigit(object):
                 result = "SUCCESS."
                 additional = "Test is successful"
         else:
-            result =  "CONFIRM:"
+            result = "CONFIRM:"
             additional = "There is no uses-feature tag in this AndroidManifest.xml"
 
-        self.showResult(testId,result,additional)
+        self.showResult(testId, result, additional)
 
     def PRG3(self, proguard_list):
         """
         :return:
         """
         # todo change print version
-        print "\n========== PRG3 Test ==========\n"
+        testId = "PRG3"
+        result = "\n"
+        additional = ""
         proguard_files = self.gradle["android"]["buildTypes"][0]["release"][0]["proguardFiles"][0]
         isValid = True
         proguard_files.remove("getDefaultProguardFile")
         for file in proguard_files:
             if file in proguard_list:
                 isValid = False
-                print"WARNING: " + file + " is added to the build.gradle"
+                result = result + "==\tWARNING: " + file + " is added to the build.gradle\n"
         if isValid:
-            print "SUCCEED."
+            result += "==\tSUCCEED.\n"
         else:
-            print "FAILED."
+            result += "==\tFAILED.\n"
 
-        print "Added proguard files listed below:\n"
+        result += "==\tAdded proguard files listed below:\n"
         for i in range(len(proguard_files)):
-            print  "{0}-) {1}".format(str(i + 1), proguard_files[i])
+            result = result + "==\t{0}-) {1}".format(str(i + 1), proguard_files[i]) + "\n"
+
+        self.showResult(testId, result, additional)
 
     def APK2(self):
         """
@@ -242,7 +249,7 @@ class ChecklistYigit(object):
             result = "FAILED."
             additional = "Apk size exceeds limits (>15mb)."
 
-        self.showResult(testId,result,additional)
+        self.showResult(testId, result, additional)
 
     def SEC4(self):
         """
@@ -250,7 +257,8 @@ class ChecklistYigit(object):
         """
         # todo change print version
 
-        print "\n========== SEC4 Test ==========\n"
+        testId = "SEC4"
+        result = "\n"
         if (not self.is_apk_created):
             self.createAPK()
         activities, services, receivers = object(), object(), object()
@@ -273,12 +281,12 @@ class ChecklistYigit(object):
                             pass
                         else:
                             isValid = False
-                            print"CONFIRM: " + check[
-                                '@android:name'] + "\t--> android:exported value should be set to false"
+                            result = result + "==\tCONFIRM: " + check[
+                                '@android:name'] + "\t--> android:exported value should be set to false\n"
                     else:
                         isValid = False
-                        print "CONFIRM: " + check[
-                            '@android:name'] + "\t--> Please add android:exported=\"false\" attribute"
+                        result = result + "==\tCONFIRM: " + check[
+                            '@android:name'] + "\t--> Please add android:exported=\"false\" attribute\n"
         if (service_exist):
             for check in services:
                 if 'intent-filter' in check:
@@ -287,12 +295,12 @@ class ChecklistYigit(object):
                             pass
                         else:
                             isValid = False
-                            print "CONFIRM: " + check[
-                                '@android:name'] + "\t--> android:exported value should be set to false"
+                            result = result + "==\tCONFIRM: " + check[
+                                '@android:name'] + "\t--> android:exported value should be set to false\n"
                     else:
                         isValid = False
-                        print "CONFIRM: " + check[
-                            '@android:name'] + "\t--> Please add android:exported=\"false\" attribute"
+                        result = result + "==\tCONFIRM: " + check[
+                            '@android:name'] + "\t--> Please add android:exported=\"false\" attribute\n"
         if (receiver_exist):
             for check in receivers:
                 if 'intent-filter' in check:
@@ -301,14 +309,16 @@ class ChecklistYigit(object):
                             pass
                         else:
                             isValid = False
-                            print "CONFIRM: " + check[
-                                '@android:name'] + "\t--> android:exported value should be set to false"
+                            result = result + "==\tCONFIRM: " + check[
+                                '@android:name'] + "\t--> android:exported value should be set to false\n"
                     else:
                         isValid = False
-                        print "CONFIRM: " + check[
-                            '@android:name'] + "\t--> Please add android:exported=\"false\" attribute"
+                        result = result + "==\tCONFIRM: " + check[
+                            '@android:name'] + "\t--> Please add android:exported=\"false\" attribute\n"
 
         if (isValid):
-            print "SUCCEED."
+            result = result + "==\tSUCCEED."
         else:
-            print "FAILED."
+            result = result + "==\tFAILED."
+
+        self.showResult(testId,result,"")

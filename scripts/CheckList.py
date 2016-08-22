@@ -47,7 +47,9 @@ class Checklist(object):
         shrinkResources = config.get('PRG2', 'shrinkResources')
         self.checklist_berker.PRG2(minifyEnabled,shrinkResources)
 
-        self.checklist_yigit.PRG3(['proguard-android.txt', 'proguard-rules.pro'])
+        proguardList = config.get('PRG3', 'proguardList')
+        self.checklist_yigit.PRG3(proguardList)
+
         self.checklist_yigit.APK2()
 
         allowBackup = config.get('SEC1','allowBackup')
