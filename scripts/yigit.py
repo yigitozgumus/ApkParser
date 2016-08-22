@@ -34,7 +34,7 @@ class ChecklistYigit(object):
         print "=="
         print "==================================================================\n"
 
-    def showResult(self,testId,res_add_tuples):
+    def showResults(self,testId,res_add_tuples):
         print "\n\n============ " + testId + " Test ==========================================="
         for result,additional in res_add_tuples:
             print "=="
@@ -352,7 +352,6 @@ class ChecklistYigit(object):
             output = check_output(["./aapt","d","badging",self.project_dir+apk_location])
         # information extraction
         list = output.split("\n")
-        print list
         permission_aapt = [re.search("\'[\s\S]+\'",x).group(0).strip("'") for x in list if "permission" in x]
         permission_annotate = [re.search("^[\s\S]+:",x).group(0).strip(":") for x in list if "permission" in x]
         permission_manifest = [x["@android:name"] for x in self.manifest['manifest']['uses-permission']]
@@ -412,15 +411,33 @@ class ChecklistYigit(object):
             additional = "Your locale definitions are inconsistent. Check your Project"
             res_add.append((result, additional))
 
-        self.showResult(testId,res_add)
+        self.showResults(testId,res_add)
 
 
     def MAN4(self):
         """
-
+        Check android:Version name from manifest file
         @return:
         """
         testId = "MAN4"
+        res_add = []
+        version_name = ''
+        try:
+            version_name = self.manifest['manifest']['android:versionName']
+        except:
+            result = "FAILED."
+            additional = "There is no defined android:VersionName in the AndroidManifest file"
+            self.showResult(testId,result,additional)
+        if len(version_name) != 0:
+            version_coded = version_name.split(".")
+            if len(version_coded) == 3 :
+                result = "SUCCEED."
+                additional = "Version naming is correct"
+                self.showResult(testId, result, additional)
+            else :
+                result = "FAILED."
+                additional = "Please check your version name in the AndroidManifest file"
+                self.showResult(testId, result, additional)
 
     def SIGN2(self):
         """
@@ -453,10 +470,63 @@ class ChecklistYigit(object):
         """
         testId = "CQ1"
 
-    def APK1(self):
+    def APK1(self,apk_folder):
         """
-
+        Checks the apk for the <app-name>-<flavor>-<buildType>-<versionName>.apk convention
         @return:
         """
         testId = "APK1"
+        with working_directory(self.project_dir+apk_folder):
+            apk_names = check_output(["ls"]).split("\n")
+
+        try:
+            app_name = self.gradle['monitise']['appOptions'][0]['projectName'][0]
+        except:
+            result = "FAILED."
+            additional = "There is no monitise section in gradle file"
+            self.showResult(testId,result,additional)
+            return
+        flavors = self.gradle['android']['productFlavors'][0].keys()
+        version_name = ''
+        try:
+            version_name = self.manifest['manifest']['android:versionName']
+        except:
+            result = "FAILED."
+            additional = "There is no defined android:VersionName in the AndroidManifest file"
+            self.showResult(testId,result,additional)
+            return
+        build_types = self.gradle['android']['buildTypes'][0].keys()
+        # name combinations
+        apk_name_list = []
+        if(len(flavors) == 0 or len(build_types) == 0 or version_name == ''):
+            result = "FAILED."
+            additional = "Check flavors, build types and version name declarations"
+            self.showResult(testId, result, additional)
+        else:
+            for flavor in flavors:
+                apk_name_list.append(app_name + "-"+ flavor)
+            build_multiply = len(build_types)
+            apk_name_list = apk_name_list * build_multiply
+            for index in range(len(apk_name_list)):
+                apk_name_list[index] = apk_name_list[index] + "-" + version_name + ".apk"
+            names_valid = True
+            additional = ''
+            for apk in apk_names:
+                if apk not in apk_name_list:
+                    names_valid = False
+                    additional = additional + " Check " + apk + "'s naming conventions'\n"
+            if(names_valid):
+                result = "SUCCEED."
+                additional = "All apk names are valid."
+                self.showResult(testId,result,additional)
+            else:
+                result = "FAILED."
+                self.showResult(testId,result,additional)
+
+
+
+
+
+
+
 

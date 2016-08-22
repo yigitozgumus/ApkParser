@@ -36,6 +36,7 @@ class Checklist(object):
         # self.checklist_yigit.MAN1()
         # self.checklist_berker.MAN2()
         # self.checklist_yigit.MAN3()
+        # self.checklist_yigit.MAN4()
         # self.checklist_berker.MAN5()
         #
         # self.checklist_yigit.SIGN4()
@@ -56,6 +57,11 @@ class Checklist(object):
         # self.checklist_berker.SEC1(allowBackup)
         # self.checklist_yigit.SEC4()
         # self.checklist_yigit.SIGN2()
-        sdk_location = config.get('GEN4', 'sdkLocation')
-        apk_location = config.get('GEN4','apkLocation')
-        self.checklist_yigit.GEN4(apk_location,sdk_location)
+        # sdk_location = config.get('GEN4', 'sdkLocation')
+        # apk_location = config.get('GEN4','apkLocation')
+        # self.checklist_yigit.GEN4(apk_location,sdk_location)
+
+        apk_folder_location = config.get('APK1','apkFolderLocation')
+        self.checklist_yigit.APK1(apk_folder_location)
+
+
