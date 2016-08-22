@@ -34,6 +34,14 @@ class ChecklistYigit(object):
         print "=="
         print "==================================================================\n"
 
+    def showResult(self,testId,res_add_tuples):
+        print "\n\n============ " + testId + " Test ==========================================="
+        for result,additional in res_add_tuples:
+            print "=="
+            print "==\t" + result + additional
+            print "=="
+            print "=================================================================="
+
     def B2(self):
         """
         This test executes gradle signing Report
@@ -339,12 +347,72 @@ class ChecklistYigit(object):
         @return:
         """
         testId = "GEN4"
+        res_add = []
         with working_directory(sdk_location):
             output = check_output(["./aapt","d","badging",self.project_dir+apk_location])
         # information extraction
         list = output.split("\n")
-        print [x for x in list if "permission" in x]
+        print list
+        permission_aapt = [re.search("\'[\s\S]+\'",x).group(0).strip("'") for x in list if "permission" in x]
+        permission_annotate = [re.search("^[\s\S]+:",x).group(0).strip(":") for x in list if "permission" in x]
+        permission_manifest = [x["@android:name"] for x in self.manifest['manifest']['uses-permission']]
 
+        densitiy_info = [x for x in list if  "densities" in x]
+        densities_supported = map(lambda x:x.strip("'"),densitiy_info[0].split(" ")[1:])
+
+        any_density = [x for x in list if "supports-any-density" in x]
+        locales = [x for x in list if "locales"]
+        locales_supported = map(lambda x:x.strip("'"),locales[0].split(" ")[1:])
+        try:
+            locales_gradle = self.gradle['android']['defaultConfig'][0]['resConfigs'][0]
+
+        except:
+            pass
+        #Verify permissions
+        aapt_length = len(permission_aapt)
+        manifest_length = len(permission_manifest)
+        if(aapt_length != manifest_length):
+            result = "FAILED."
+            len_long = permission_aapt if aapt_length > manifest_length else permission_manifest
+            len_short = permission_manifest if len_long == permission_aapt else permission_aapt
+            additional = "The number of permissions in manifest and aapt result are different." \
+                         ""
+            differences = ''
+            for i in len_long:
+                if i < len(len_short):
+                    if(len_long[i] != len_short[i]):
+                        differences = differences + permission_annotate[i] + "->"
+            res_add.append((result,additional))
+        #Verify Densities
+        if "true" in any_density[0]:
+            result = "SUCCEED."
+            additional = "Application supports all densities. Here are the defined ones: " \
+                         + " ".join(densities_supported)
+            res_add.append((result,additional))
+        else:
+            result = "WARNING."
+            additional = "Support any density option is false. Here are the defined densities: " \
+                         + " ".join(densities_supported)
+            res_add.append(result,additional)
+        # Verify Locales
+        locale_check = True
+        if ( len(locales_gradle) == 0 or len(locales_supported) == 0):
+            result = "FAILED."
+            additional = "Your locale definitions are empty. Check your Project"
+            res_add.append((result,additional))
+        for locale in locales_supported:
+            if locale not in  locales_gradle:
+                locale_check = False
+        if(locale_check):
+            result = "SUCCEED."
+            additional = "Your locale definitions are consistent"
+            res_add.append((result, additional))
+        else:
+            result = "FAILED."
+            additional = "Your locale definitions are inconsistent. Check your Project"
+            res_add.append((result, additional))
+
+        self.showResult(testId,res_add)
 
 
     def MAN4(self):
