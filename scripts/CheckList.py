@@ -55,3 +55,7 @@ class Checklist(object):
         allowBackup = config.get('SEC1','allowBackup')
         self.checklist_berker.SEC1(allowBackup)
         self.checklist_yigit.SEC4()
+        self.checklist_yigit.SIGN2()
+        sdk_location = config.get('GEN4', 'sdkLocation')
+        apk_location = config.get('GEN4','apkLocation')
+        self.checklist_yigit.GEN4(apk_location,sdk_location)
