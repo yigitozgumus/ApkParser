@@ -6,6 +6,7 @@ import sys
 import urllib2
 from checkUtil import working_directory
 from subprocess import call
+from subprocess import check_output
 import CheckList as cl
 
 def main():
@@ -16,7 +17,10 @@ def main():
         tasks = args.tasks
         print tasks
     apk_extension= "/app/build/outputs/apk/app-release.apk"
-    # apktool_loading()
+    try:
+        check_output(["apktool"])
+    except:
+        apktool_loading()
     tester = cl.Checklist(project,project+apk_extension)
     tester.executeTests()
 
