@@ -1,12 +1,9 @@
 apply plugin: 'android-sdk-manager'
 apply from: '../scripts/android-app.gradle'
-
 apply plugin: 'io.fabric'
 apply plugin: 'let'
 apply plugin: 'com.neenbedankt.android-apt'
-
 buildscript {
-
     repositories {
         jcenter()
         maven { url 'https://maven.fabric.io/public' }
@@ -15,38 +12,30 @@ buildscript {
             dirs 'libs'
         }
     }
-
     dependencies {
         classpath 'io.fabric.tools:gradle:1.+'
         classpath 'com.squareup.gradle:gradle-android-test-plugin:0.9.1-SNAPSHOT'
         classpath 'com.canelmas.let:let-plugin:0.1.10'
     }
 }
-
-
 repositories {
     mavenCentral()
     maven { url 'https://maven.fabric.io/public' }
     maven { url 'https://clojars.org/repo/' }
 }
-
 android {
     compileSdkVersion 24
     buildToolsVersion 24.0.1
     useLibrary 'org.apache.http.legacy'
-
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 24
-        versionCode 34
         applicationId "com.monitise.sample"
         resConfigs "en", "tr"
     }
-
     lintOptions {
         abortOnError false
     }
-
     signingConfigs {
         debug {
             storeFile file("debug.keystore")
@@ -58,24 +47,17 @@ android {
             keyPassword "password"
         }
     }
-
     productFlavors {
-
         local {
             buildConfigField "boolean", "MOCK_ENABLED", "true"
         }
-
         internal {
         }
-
         external {
         }
-
         prod {
         }
-
     }
-
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
@@ -90,10 +72,7 @@ android {
             proguardFiles 'proguard-project.txt', 'proguard-rules.txt'
         }
     }
-
 }
-
-
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile('com.monitise.commons:commons:1.0.4.42@aar') {
@@ -124,11 +103,9 @@ dependencies {
     compile('com.crashlytics.sdk.android:crashlytics:+') {
         transitive = true;
     }
-
     compile 'frankiesardo:icepick:3.2.0'
     provided 'frankiesardo:icepick-processor:3.2.0'
 }
-
 monitise {
     projectName 'sample_app'
     checkstyle {
@@ -152,12 +129,11 @@ monitise {
         }
     }
 }
-
 ext {
     compileSdkVersion = 23
-    playServicesVersion = "34.54.34"
-    supportLibVersion = "1.1.1.1.1"
     buildToolsVersion = "23.0.2"
+    supportLibVersion = "4.5.23"
+    playServicesVersion = "23.5.34"
     minSdkVersion = 15
     targetSdkVersion = 23
 }
