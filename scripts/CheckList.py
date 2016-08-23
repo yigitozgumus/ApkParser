@@ -18,7 +18,7 @@ class Checklist(object):
         config = ConfigParser.ConfigParser()
 
         config.read(config_location)
-
+        self.checklist_yigit.gen2()
         self.checklist_yigit.b2()
         self.checklist_berker.B4()
 
@@ -38,7 +38,7 @@ class Checklist(object):
         self.checklist_yigit.man3()
         self.checklist_yigit.man4()
         self.checklist_berker.MAN5()
-
+        self.checklist_yigit.sign2()
         self.checklist_yigit.sign4()
 
         self.checklist_berker.PERM2()
@@ -50,18 +50,18 @@ class Checklist(object):
 
         proguardList = config.get('PRG3', 'proguardList')
         self.checklist_yigit.prg3(proguardList)
-
+        apk_folder_location = config.get('APK1', 'apkFolderLocation')
+        self.checklist_yigit.apk1(apk_folder_location)
         self.checklist_yigit.apk2()
 
         allowBackup = config.get('SEC1','allowBackup')
         self.checklist_berker.SEC1(allowBackup)
         self.checklist_yigit.sec4()
-        self.checklist_yigit.sign2()
+
         sdk_location = config.get('GEN4', 'sdkLocation')
         apk_location = config.get('GEN4','apkLocation')
         self.checklist_yigit.gen4(apk_location,sdk_location)
 
-        apk_folder_location = config.get('APK1','apkFolderLocation')
-        self.checklist_yigit.apk1(apk_folder_location)
+
 
 

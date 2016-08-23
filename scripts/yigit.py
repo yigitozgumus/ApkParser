@@ -9,6 +9,7 @@ import os.path as path
 from apk_parse import apk
 from checkUtil import extractXML
 from checkUtil import working_directory
+from bs4 import BeautifulSoup
 
 
 class ChecklistYigit(object):
@@ -336,10 +337,35 @@ class ChecklistYigit(object):
 
     def gen2(self):
         """
-
+        Runs all the tests including espressos and prints out the results
         @return:
         """
         testId = "GEN2"
+
+        with working_directory(self.project_dir):
+            output = check_output(["./gradlew", "connectedCheck"], shell=True,
+                                  stderr=subprocess.STDOUT)
+        test_locations = '/app/build/reports/androidTests/connected/flavors'
+        with working_directory(self.project_dir + test_locations):
+            flavors = check_output(["ls"]).split("\n")
+            flavor_list = [x.strip("'") for x in flavors]
+        #Print external Report
+        report_location = '/app/build/reports/androidTests/connected/flavors/EXTERNAL'
+        with working_directory(self.project_dir+report_location):
+            soup = BeautifulSoup(open("index.html"),'html.parser')
+        success_rate = soup.find(id='successRate').div.get_text()
+        links = [x.get('href') for x in soup.findAll('a') if ("tab" or ("gradle" or "html#s")) not in x.get('href')]
+        if(success_rate != "100%"):
+            result = "FAILED."
+            additional = "Success rate is : "+success_rate +". Some or all of your tests have failed. Please check :" + \
+            "\n==\t " + self.project_dir+report_location + "/index.html for more information."
+            self.showResult(testId,result,additional)
+        else:
+            result = "SUCCEED."
+            additional = "Success rate is : "+success_rate +". All of your tests have succeed. Please check :" + \
+            "\n==\t " + self.project_dir + report_location + "/index.html for more information."
+            self.showResult(testId, result, additional)
+
 
     def gen4(self, apk_location, sdk_location):
         """
@@ -466,6 +492,7 @@ class ChecklistYigit(object):
 
         @return:
         """
+        print "This test will not be implemented."
         testId = "CQ1"
 
     def apk1(self, apk_folder):
