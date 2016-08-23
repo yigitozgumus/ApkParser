@@ -236,9 +236,9 @@ class ChecklistYigit(object):
         else:
             result += "==\tFAILED.\n"
 
-        result += "==\tAdded proguard files listed below:\n"
+        result += "==\tAdded proguard files listed below:"
         for i in range(len(proguard_files)):
-            result = result + "==\t{0}-) {1}".format(str(i + 1), proguard_files[i]) + "\n"
+            result = result + "\n==\t{0}-) {1}".format(str(i + 1), proguard_files[i]) + ""
 
         self.showResult(testId, result, additional)
 
@@ -478,7 +478,6 @@ class ChecklistYigit(object):
         testId = "APK1"
         with working_directory(self.project_dir+apk_folder):
             apk_names = check_output(["ls"]).split("\n")
-
         try:
             app_name = self.gradle['monitise']['appOptions'][0]['projectName'][0]
         except:
@@ -487,7 +486,7 @@ class ChecklistYigit(object):
             self.showResult(testId,result,additional)
             return
         flavors = self.gradle['android']['productFlavors'][0].keys()
-        version_name = ''
+        version_name = '1.2.3'
         try:
             version_name = self.manifest['manifest']['android:versionName']
         except:
@@ -497,31 +496,46 @@ class ChecklistYigit(object):
             return
         build_types = self.gradle['android']['buildTypes'][0].keys()
         # name combinations
-        apk_name_list = []
+        apk_results = []
         if(len(flavors) == 0 or len(build_types) == 0 or version_name == ''):
             result = "FAILED."
             additional = "Check flavors, build types and version name declarations"
             self.showResult(testId, result, additional)
         else:
-            for flavor in flavors:
-                apk_name_list.append(app_name + "-"+ flavor)
-            build_multiply = len(build_types)
-            apk_name_list = apk_name_list * build_multiply
-            for index in range(len(apk_name_list)):
-                apk_name_list[index] = apk_name_list[index] + "-" + version_name + ".apk"
-            names_valid = True
-            additional = ''
-            for apk in apk_names:
-                if apk not in apk_name_list:
-                    names_valid = False
-                    additional = additional + " Check " + apk + "'s naming conventions'\n"
-            if(names_valid):
-                result = "SUCCEED."
-                additional = "All apk names are valid."
-                self.showResult(testId,result,additional)
-            else:
-                result = "FAILED."
-                self.showResult(testId,result,additional)
+            for app in apk_names:
+                check_app = app.split("-")
+                if len(check_app) != 4 :
+                    result = "FAILED."
+                    additional = app + " is not a valid name for the project"
+                    apk_results.append((result,additional))
+                else:
+                    is_valid = True
+                    additional = ''
+                    if check_app[0] != app_name:
+                        is_valid = False
+                        additional = additional +  "\n==\t" + app + "'s app name is not consistent with the project"
+                    if check_app[1] not in flavors:
+                        is_valid = False
+                        additional = additional +  "\n==\t" + app + "'s flavor value is not consistent with the project"
+                    if check_app[2] not in build_types:
+                        is_valid = False
+                        additional = additional +  "\n==\t" + app + "'s build type is not consistent with the project"
+                    if check_app[3] != version_name:
+                        is_valid = False
+                        additional = additional +  "\n==\t" + app + "'s version name is not consistent with the project"
+                    if(is_valid):
+                        result = "SUCCEED."
+                        additional = app + "'s name is valid. "
+                        apk_results.append((result,additional))
+                    else:
+                        result = "FAILED."
+                        apk_results.append((result,additional))
+            self.showResults(testId,apk_results)
+
+
+
+
+
 
 
 
