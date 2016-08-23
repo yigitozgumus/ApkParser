@@ -1,3 +1,4 @@
 m2crypto
 untangle
 xmltodict
+beautifulsoup4

@@ -9,6 +9,7 @@ import os.path as path
 from apk_parse import apk
 from checkUtil import extractXML
 from checkUtil import working_directory
+from bs4 import BeautifulSoup
 
 
 class ChecklistYigit(object):
@@ -34,15 +35,15 @@ class ChecklistYigit(object):
         print "=="
         print "==================================================================\n"
 
-    def showResults(self,testId,res_add_tuples):
+    def showResults(self, testId, res_add_tuples):
         print "\n\n============ " + testId + " Test ==========================================="
-        for result,additional in res_add_tuples:
+        for result, additional in res_add_tuples:
             print "=="
             print "==\t" + result + additional
             print "=="
             print "=================================================================="
 
-    def B2(self):
+    def b2(self):
         """
         This test executes gradle signing Report
         :param project_dir: Project location
@@ -67,7 +68,7 @@ class ChecklistYigit(object):
         for i in signing_report:
             print i
 
-    def createAPK(self):
+    def create_apk(self):
         """
         :return:
         """
@@ -76,13 +77,13 @@ class ChecklistYigit(object):
         self.is_apk_created = True
         # print "Apk file is created"
 
-    def B5(self, config_minSdk):
+    def b5(self, config_minSdk):
         """
         :return:
         """
         testId = "B5"
         if (not self.is_apk_created):
-            self.createAPK()
+            self.create_apk()
         min_sdk = self.apkf_inspect.get_min_sdk_version()
         if (min_sdk == config_minSdk):
             result = "SUCCEED."
@@ -93,21 +94,21 @@ class ChecklistYigit(object):
 
         self.showResult(testId, result, additional)
 
-    def B7(self):
+    def b7(self):
         """
         :return:
         """
         testId = "B7 Test"
         # TODO ask the checklist item
         if (not self.is_apk_created):
-            self.createAPK()
+            self.create_apk()
         compile_sdk = self.gradle["android"]["compileSdkVersion"][0][0]
         result = "SUCCEED."
         additional = "Project compileSdkVersion is " + compile_sdk + ". Check for behavioral changes accordingly"
 
         self.showResult(testId, result, additional)
 
-    def B8(self):
+    def b8(self):
         """
         :return:
         """
@@ -129,7 +130,7 @@ class ChecklistYigit(object):
 
         self.showResult(testId, result, additional)
 
-    def MAN1(self):
+    def man1(self):
         """
         :return:
         """
@@ -141,7 +142,7 @@ class ChecklistYigit(object):
 
         self.showResult(testId, result, additional)
 
-    def MAN3(self):
+    def man3(self):
         """
         :return:
         """
@@ -156,7 +157,7 @@ class ChecklistYigit(object):
             additional = "Version name is valid"
         self.showResult(testId, result, additional)
 
-    def SIGN4(self):
+    def sign4(self):
         """
         :return:
         """
@@ -183,7 +184,7 @@ class ChecklistYigit(object):
 
         self.showResult(testId, result, "")
 
-    def PERM3(self):
+    def perm3(self):
         """
         :return:
         """
@@ -214,7 +215,7 @@ class ChecklistYigit(object):
 
         self.showResult(testId, result, additional)
 
-    def PRG3(self, proguard_list):
+    def prg3(self, proguard_list):
         """
         :return:
         """
@@ -236,13 +237,13 @@ class ChecklistYigit(object):
         else:
             result += "==\tFAILED.\n"
 
-        result += "==\tAdded proguard files listed below:\n"
+        result += "==\tAdded proguard files listed below:"
         for i in range(len(proguard_files)):
-            result = result + "==\t{0}-) {1}".format(str(i + 1), proguard_files[i]) + "\n"
+            result = result + "\n==\t{0}-) {1}".format(str(i + 1), proguard_files[i]) + ""
 
         self.showResult(testId, result, additional)
 
-    def APK2(self):
+    def apk2(self):
         """
         :return:
         """
@@ -262,7 +263,7 @@ class ChecklistYigit(object):
 
         self.showResult(testId, result, additional)
 
-    def SEC4(self):
+    def sec4(self):
         """
         :return:
         """
@@ -332,16 +333,56 @@ class ChecklistYigit(object):
         else:
             result = result + "==\tFAILED."
 
-        self.showResult(testId,result,"")
+        self.showResult(testId, result, "")
 
-    def GEN2(self):
+    def gen2(self):
         """
-
+        Runs all the tests including espressos and prints out the results
         @return:
         """
         testId = "GEN2"
 
-    def GEN4(self,apk_location,sdk_location):
+        with working_directory(self.project_dir):
+            output = check_output(["./gradlew", "connectedCheck"], shell=True,
+                                  stderr=subprocess.STDOUT)
+        flavor_list = []
+        flavor_exist = True
+        if ('productFlavors' in self.gradle['android'].keys()):
+            test_locations = '/app/build/reports/androidTests/connected/flavors'
+            with working_directory(self.project_dir + test_locations):
+                flavors = check_output(["ls"]).split("\n")
+                flavor_list = [x.strip("'") for x in flavors]
+        else:
+            test_locations = '/app/build/reports/androidTests/connected/'
+            flavor_exist = False
+
+        #Print external Report
+        file = 'index.html'
+        if(flavor_exist):
+            report_location = '/app/build/reports/androidTests/connected/flavors/EXTERNAL'
+        else:
+            report_location = '/app/build/reports/androidTests/connected/'
+            file_temp = check_output(["ls"]).split("\n")
+            file = [x.strip("'") for x in file_temp if x != ' '][0]
+        with working_directory(self.project_dir+report_location):
+            soup = BeautifulSoup(open(file),'html.parser')
+        success_rate = soup.find(id='successRate').div.get_text()
+        tests = soup.find(id='tests').div.get_text().encode('utf-8')
+        failures = soup.find(id='failures').div.get_text().encode('utf-8')
+        links = [x.get('href') for x in soup.findAll('a') if ("tab" or ("gradle" or "html#s")) not in x.get('href')]
+        if(success_rate != "100%"):
+            result = "FAILED."
+            additional = "Success rate is : "+success_rate +". "+ failures + " of "+ tests +" tests have failed. Please check :" + \
+            "\n==\t " + self.project_dir+report_location + "/index.html for more information."
+            self.showResult(testId,result,additional)
+        else:
+            result = "SUCCEED."
+            additional = "Success rate is : "+success_rate +". All of your tests have succeed. Please check :" + \
+            "\n==\t " + self.project_dir + report_location + "/index.html for more information."
+            self.showResult(testId, result, additional)
+
+
+    def gen4(self, apk_location, sdk_location):
         """
         runs aapt command and verifies permissions, locales and densities supported
         @return:
@@ -349,28 +390,28 @@ class ChecklistYigit(object):
         testId = "GEN4"
         res_add = []
         with working_directory(sdk_location):
-            output = check_output(["./aapt","d","badging",self.project_dir+apk_location])
+            output = check_output(["./aapt", "d", "badging", self.project_dir + apk_location])
         # information extraction
         list = output.split("\n")
-        permission_aapt = [re.search("\'[\s\S]+\'",x).group(0).strip("'") for x in list if "permission" in x]
-        permission_annotate = [re.search("^[\s\S]+:",x).group(0).strip(":") for x in list if "permission" in x]
+        permission_aapt = [re.search("\'[\s\S]+\'", x).group(0).strip("'") for x in list if "permission" in x]
+        permission_annotate = [re.search("^[\s\S]+:", x).group(0).strip(":") for x in list if "permission" in x]
         permission_manifest = [x["@android:name"] for x in self.manifest['manifest']['uses-permission']]
 
-        densitiy_info = [x for x in list if  "densities" in x]
-        densities_supported = map(lambda x:x.strip("'"),densitiy_info[0].split(" ")[1:])
+        densitiy_info = [x for x in list if "densities" in x]
+        densities_supported = map(lambda x: x.strip("'"), densitiy_info[0].split(" ")[1:])
 
         any_density = [x for x in list if "supports-any-density" in x]
         locales = [x for x in list if "locales"]
-        locales_supported = map(lambda x:x.strip("'"),locales[0].split(" ")[1:])
+        locales_supported = map(lambda x: x.strip("'"), locales[0].split(" ")[1:])
         try:
             locales_gradle = self.gradle['android']['defaultConfig'][0]['resConfigs'][0]
 
         except:
             pass
-        #Verify permissions
+        # Verify permissions
         aapt_length = len(permission_aapt)
         manifest_length = len(permission_manifest)
-        if(aapt_length != manifest_length):
+        if (aapt_length != manifest_length):
             result = "FAILED."
             len_long = permission_aapt if aapt_length > manifest_length else permission_manifest
             len_short = permission_manifest if len_long == permission_aapt else permission_aapt
@@ -379,30 +420,30 @@ class ChecklistYigit(object):
             differences = ''
             for i in len_long:
                 if i < len(len_short):
-                    if(len_long[i] != len_short[i]):
+                    if (len_long[i] != len_short[i]):
                         differences = differences + permission_annotate[i] + "->"
-            res_add.append((result,additional))
-        #Verify Densities
+            res_add.append((result, additional))
+        # Verify Densities
         if "true" in any_density[0]:
             result = "SUCCEED."
             additional = "Application supports all densities. Here are the defined ones: " \
                          + " ".join(densities_supported)
-            res_add.append((result,additional))
+            res_add.append((result, additional))
         else:
             result = "WARNING."
             additional = "Support any density option is false. Here are the defined densities: " \
                          + " ".join(densities_supported)
-            res_add.append(result,additional)
+            res_add.append(result, additional)
         # Verify Locales
         locale_check = True
-        if ( len(locales_gradle) == 0 or len(locales_supported) == 0):
+        if (len(locales_gradle) == 0 or len(locales_supported) == 0):
             result = "FAILED."
             additional = "Your locale definitions are empty. Check your Project"
-            res_add.append((result,additional))
+            res_add.append((result, additional))
         for locale in locales_supported:
-            if locale not in  locales_gradle:
+            if locale not in locales_gradle:
                 locale_check = False
-        if(locale_check):
+        if (locale_check):
             result = "SUCCEED."
             additional = "Your locale definitions are consistent"
             res_add.append((result, additional))
@@ -411,10 +452,9 @@ class ChecklistYigit(object):
             additional = "Your locale definitions are inconsistent. Check your Project"
             res_add.append((result, additional))
 
-        self.showResults(testId,res_add)
+        self.showResults(testId, res_add)
 
-
-    def MAN4(self):
+    def man4(self):
         """
         Check android:Version name from manifest file
         @return:
@@ -427,19 +467,19 @@ class ChecklistYigit(object):
         except:
             result = "FAILED."
             additional = "There is no defined android:VersionName in the AndroidManifest file"
-            self.showResult(testId,result,additional)
+            self.showResult(testId, result, additional)
         if len(version_name) != 0:
             version_coded = version_name.split(".")
-            if len(version_coded) == 3 :
+            if len(version_coded) == 3:
                 result = "SUCCEED."
                 additional = "Version naming is correct"
                 self.showResult(testId, result, additional)
-            else :
+            else:
                 result = "FAILED."
                 additional = "Please check your version name in the AndroidManifest file"
                 self.showResult(testId, result, additional)
 
-    def SIGN2(self):
+    def sign2(self):
         """
         This test makes sure the release keystore is included in source control
         @return:
@@ -447,86 +487,87 @@ class ChecklistYigit(object):
         testId = "SIGN2"
         keystore_path = ''
         try:
-          keystore_path =  self.gradle['android']['signingConfigs'][0]['release'][0]['storeFile'][0][0]
+            keystore_path = self.gradle['android']['signingConfigs'][0]['release'][0]['storeFile'][0][0]
         except:
             result = "FAILED."
             additional = "There is no given path for Release Keystore file"
-            self.showResult(testId,result,additional)
+            self.showResult(testId, result, additional)
             return
-        if(path.exists(keystore_path)):
+        if path.exists(keystore_path):
             result = "SUCCEED."
             additional = "Keystore file is included in source Control."
-            self.showResult(testId,result,additional)
+            self.showResult(testId, result, additional)
         else:
             result = "FAILED."
             additional = "Keystore file isn't included in source Control"
-            self.showResult(testId,result,additional)
+            self.showResult(testId, result, additional)
 
-
-    def CQ1(self):
+    def cq1(self):
         """
 
         @return:
         """
+        print "This test will not be implemented."
         testId = "CQ1"
 
-    def APK1(self,apk_folder):
+    def apk1(self, apk_folder):
         """
         Checks the apk for the <app-name>-<flavor>-<buildType>-<versionName>.apk convention
         @return:
         """
         testId = "APK1"
-        with working_directory(self.project_dir+apk_folder):
+        with working_directory(self.project_dir + apk_folder):
             apk_names = check_output(["ls"]).split("\n")
-
         try:
             app_name = self.gradle['monitise']['appOptions'][0]['projectName'][0]
         except:
             result = "FAILED."
             additional = "There is no monitise section in gradle file"
-            self.showResult(testId,result,additional)
+            self.showResult(testId, result, additional)
             return
         flavors = self.gradle['android']['productFlavors'][0].keys()
-        version_name = ''
+        version_name = '1.2.3'
         try:
             version_name = self.manifest['manifest']['android:versionName']
         except:
             result = "FAILED."
             additional = "There is no defined android:VersionName in the AndroidManifest file"
-            self.showResult(testId,result,additional)
+            self.showResult(testId, result, additional)
             return
         build_types = self.gradle['android']['buildTypes'][0].keys()
         # name combinations
-        apk_name_list = []
-        if(len(flavors) == 0 or len(build_types) == 0 or version_name == ''):
+        apk_results = []
+        if (len(flavors) == 0 or len(build_types) == 0 or version_name == ''):
             result = "FAILED."
             additional = "Check flavors, build types and version name declarations"
             self.showResult(testId, result, additional)
         else:
-            for flavor in flavors:
-                apk_name_list.append(app_name + "-"+ flavor)
-            build_multiply = len(build_types)
-            apk_name_list = apk_name_list * build_multiply
-            for index in range(len(apk_name_list)):
-                apk_name_list[index] = apk_name_list[index] + "-" + version_name + ".apk"
-            names_valid = True
-            additional = ''
-            for apk in apk_names:
-                if apk not in apk_name_list:
-                    names_valid = False
-                    additional = additional + " Check " + apk + "'s naming conventions'\n"
-            if(names_valid):
-                result = "SUCCEED."
-                additional = "All apk names are valid."
-                self.showResult(testId,result,additional)
-            else:
-                result = "FAILED."
-                self.showResult(testId,result,additional)
-
-
-
-
-
-
-
-
+            for app in apk_names:
+                check_app = app.split("-")
+                if len(check_app) != 4:
+                    result = "FAILED."
+                    additional = app + " is not a valid name for the project"
+                    apk_results.append((result, additional))
+                else:
+                    is_valid = True
+                    additional = ''
+                    if check_app[0] != app_name:
+                        is_valid = False
+                        additional = additional + "\n==\t" + app + "'s app name is not consistent with the project"
+                    if check_app[1] not in flavors:
+                        is_valid = False
+                        additional = additional + "\n==\t" + app + "'s flavor value is not consistent with the project"
+                    if check_app[2] not in build_types:
+                        is_valid = False
+                        additional = additional + "\n==\t" + app + "'s build type is not consistent with the project"
+                    if check_app[3] != version_name:
+                        is_valid = False
+                        additional = additional + "\n==\t" + app + "'s version name is not consistent with the project"
+                    if (is_valid):
+                        result = "SUCCEED."
+                        additional = app + "'s name is valid. "
+                        apk_results.append((result, additional))
+                    else:
+                        result = "FAILED."
+                        apk_results.append((result, additional))
+            self.showResults(testId, apk_results)

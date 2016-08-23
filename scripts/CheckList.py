@@ -19,49 +19,50 @@ class Checklist(object):
 
         config.read(config_location)
 
-        # self.checklist_yigit.B2()
-        # self.checklist_berker.B4()
-        #
-        # minSdkVersion = config.get('B5', 'minSdkVersion')
-        # self.checklist_yigit.B5(minSdkVersion)
-        #
-        # targetSdkVersion = config.get('B6', 'targetSdkVersion')
-        # self.checklist_berker.B6(targetSdkVersion)
-        #
-        # self.checklist_yigit.B7()
-        # self.checklist_berker.B7()
-        # self.checklist_yigit.B8()
-        # self.checklist_berker.B9()
-        #
-        # self.checklist_yigit.MAN1()
-        # self.checklist_berker.MAN2()
-        # self.checklist_yigit.MAN3()
-        # self.checklist_yigit.MAN4()
-        # self.checklist_berker.MAN5()
-        #
-        # self.checklist_yigit.SIGN4()
-        #
-        # self.checklist_berker.PERM2()
-        # self.checklist_yigit.PERM3()
-        #
-        # minifyEnabled = config.get('PRG2', 'minifyEnabled')
-        # shrinkResources = config.get('PRG2', 'shrinkResources')
-        # self.checklist_berker.PRG2(minifyEnabled,shrinkResources)
-        #
-        # proguardList = config.get('PRG3', 'proguardList')
-        # self.checklist_yigit.PRG3(proguardList)
-        #
-        # self.checklist_yigit.APK2()
-        #
-        # allowBackup = config.get('SEC1','allowBackup')
-        # self.checklist_berker.SEC1(allowBackup)
-        # self.checklist_yigit.SEC4()
-        # self.checklist_yigit.SIGN2()
-        # sdk_location = config.get('GEN4', 'sdkLocation')
-        # apk_location = config.get('GEN4','apkLocation')
-        # self.checklist_yigit.GEN4(apk_location,sdk_location)
+        self.checklist_yigit.gen2()
+        self.checklist_yigit.b2()
+        self.checklist_berker.b4()
 
-        apk_folder_location = config.get('APK1','apkFolderLocation')
-        self.checklist_yigit.APK1(apk_folder_location)
+        minSdkVersion = config.get('B5', 'minSdkVersion')
+        self.checklist_yigit.b5(minSdkVersion)
+
+        targetSdkVersion = config.get('B6', 'targetSdkVersion')
+        self.checklist_berker.b6(targetSdkVersion)
+
+        self.checklist_yigit.b7()
+        self.checklist_berker.b7()
+        self.checklist_yigit.b8()
+        self.checklist_berker.b9()
+
+        self.checklist_yigit.man1()
+        self.checklist_berker.man2()
+        self.checklist_yigit.man3()
+        self.checklist_yigit.man4()
+        self.checklist_berker.man5()
+        self.checklist_yigit.sign2()
+        self.checklist_yigit.sign4()
+
+        self.checklist_berker.perm2()
+        self.checklist_yigit.perm3()
+
+        minifyEnabled = config.get('PRG2', 'minifyEnabled')
+        shrinkResources = config.get('PRG2', 'shrinkResources')
+        self.checklist_berker.prg2(minifyEnabled,shrinkResources)
+
+        proguardList = config.get('PRG3', 'proguardList')
+        self.checklist_yigit.prg3(proguardList)
+        apk_folder_location = config.get('APK1', 'apkFolderLocation')
+        self.checklist_yigit.apk1(apk_folder_location)
+        self.checklist_yigit.apk2()
+
+        allowBackup = config.get('SEC1','allowBackup')
+        self.checklist_berker.sec1(allowBackup)
+        self.checklist_yigit.sec4()
+
+        sdk_location = config.get('GEN4', 'sdkLocation')
+        apk_location = config.get('GEN4','apkLocation')
+        self.checklist_yigit.gen4(apk_location,sdk_location)
+
+
 
 
