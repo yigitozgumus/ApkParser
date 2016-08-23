@@ -345,14 +345,27 @@ class ChecklistYigit(object):
         with working_directory(self.project_dir):
             output = check_output(["./gradlew", "connectedCheck"], shell=True,
                                   stderr=subprocess.STDOUT)
-        test_locations = '/app/build/reports/androidTests/connected/flavors'
-        with working_directory(self.project_dir + test_locations):
-            flavors = check_output(["ls"]).split("\n")
-            flavor_list = [x.strip("'") for x in flavors]
+        flavor_list = []
+        flavor_exist = True
+        if ('productFlavors' in self.gradle['android'].keys()):
+            test_locations = '/app/build/reports/androidTests/connected/flavors'
+            with working_directory(self.project_dir + test_locations):
+                flavors = check_output(["ls"]).split("\n")
+                flavor_list = [x.strip("'") for x in flavors]
+        else:
+            test_locations = '/app/build/reports/androidTests/connected/'
+            flavor_exist = False
+
         #Print external Report
-        report_location = '/app/build/reports/androidTests/connected/flavors/EXTERNAL'
+        file = 'index.html'
+        if(flavor_exist):
+            report_location = '/app/build/reports/androidTests/connected/flavors/EXTERNAL'
+        else:
+            report_location = '/app/build/reports/androidTests/connected/'
+            file_temp = check_output(["ls"]).split("\n")
+            file = [x.strip("'") for x in file_temp if x != ' '][0]
         with working_directory(self.project_dir+report_location):
-            soup = BeautifulSoup(open("index.html"),'html.parser')
+            soup = BeautifulSoup(open(file),'html.parser')
         success_rate = soup.find(id='successRate').div.get_text()
         tests = soup.find(id='tests').div.get_text().encode('utf-8')
         failures = soup.find(id='failures').div.get_text().encode('utf-8')
