@@ -354,10 +354,12 @@ class ChecklistYigit(object):
         with working_directory(self.project_dir+report_location):
             soup = BeautifulSoup(open("index.html"),'html.parser')
         success_rate = soup.find(id='successRate').div.get_text()
+        tests = soup.find(id='tests').div.get_text().encode('utf-8')
+        failures = soup.find(id='failures').div.get_text().encode('utf-8')
         links = [x.get('href') for x in soup.findAll('a') if ("tab" or ("gradle" or "html#s")) not in x.get('href')]
         if(success_rate != "100%"):
             result = "FAILED."
-            additional = "Success rate is : "+success_rate +". Some or all of your tests have failed. Please check :" + \
+            additional = "Success rate is : "+success_rate +". "+ failures + " of "+ tests +" tests have failed. Please check :" + \
             "\n==\t " + self.project_dir+report_location + "/index.html for more information."
             self.showResult(testId,result,additional)
         else:
