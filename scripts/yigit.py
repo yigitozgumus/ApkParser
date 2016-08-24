@@ -20,28 +20,44 @@ class ChecklistYigit(object):
     """
     is_apk_created = False
     apk_location = "/app/build/outputs/apk/app-external-release.apk"
+    test_results = []
 
-    def __init__(self, project_dir, apk_dir):
+    def __init__(self, project_dir, apk_dir,config):
         self.project_dir = project_dir
         self.apk_dir = apk_dir
         self.manifest = extractXML(project_dir, apk_dir)
         self.apkf_inspect = apk.APK(apk_dir)
         self.gradle = gr.GradleParserNew(self.project_dir + "/app").parse(False)
+        self.config = config
 
-    def showResult(self, testId, result, additional):
-        print "\n\n============ " + testId + " Test ==========================================="
-        print "=="
-        print "==\t" + result + additional
-        print "=="
-        print "==================================================================\n"
+    def execute_test_batch(self):
+        self.test_results.append(self.b2())
+        minSdkVersion = self.config.get('B5', 'minSdkVersion')
+        self.test_results.append(self.b5(minSdkVersion))
+        self.test_results.append(self.b7())
+        self.test_results.append(self.b8())
+        self.test_results.append(self.man1())
+        self.test_result.append(self.man3())
+        self.test_results.append(self.sign4())
+        self.test_results.append(self.perm3())
+        proguardList = self.config.get('PRG3', 'proguardList')
+        self.test_results.append(self.prg3(proguardList))
+        self.test_results.append(self.apk2())
+        self.test_results.append(self.sec4())
+        self.test_results.append(self.gen2())
+        sdk_location = self.config.get('GEN4', 'sdkLocation')
+        apk_location = self.config.get('GEN4', 'apkLocation')
+        self.test_results.append(self.gen4(apk_location,sdk_location))
+        self.test_results.append(self.man4())
+        self.test_results.append(self.sign2())
+        apk_folder_location = self.config.get('APK1', 'apkFolderLocation')
+        self.test_results.append(self.apk1(apk_folder_location))
+        return self.test_results
 
-    def showResults(self, testId, res_add_tuples):
-        print "\n\n============ " + testId + " Test ==========================================="
-        for result, additional in res_add_tuples:
-            print "=="
-            print "==\t" + result + additional
-            print "=="
-            print "=================================================================="
+    def b2_desc(self):
+        return "This test ensures the release apk is signed with release keystore; " \
+               "verifies the signing information for each variant with gradle's signingReport" \
+               " task"
 
     def b2(self):
         """
@@ -63,10 +79,10 @@ class ChecklistYigit(object):
             additional = "Signing task build is successful, keys are valid"
         else:
             result = "FAILED."
-            additional = "Please check assigned keys"
-        self.showResult(testId, result, additional)
-        for i in signing_report:
-            print i
+            additional = "Please check assigned keys\n"
+            for i in signing_report:
+                additional = additional + i + '\n'
+        return tuple(testId,self.b2_desc(),tuple(result,additional))
 
     def create_apk(self):
         """
@@ -76,6 +92,12 @@ class ChecklistYigit(object):
             subprocess.check_output(["./gradlew", "assembleRelease"])
         self.is_apk_created = True
         # print "Apk file is created"
+
+    def b5_descp(self):
+        return "This test makes sure that minSdkVersion is set to 16 for new projects. " \
+               "Get approval from your PM, project's Technical Owner and your manager " \
+               "before modifying this number on any ongoing project."
+
 
     def b5(self, config_minSdk):
         """
@@ -92,7 +114,12 @@ class ChecklistYigit(object):
             result = "FAILED."
             additional = "Test failed. Your project's minimum sdk is not " + config_minSdk + ", it is " + min_sdk + ". "
 
-        self.showResult(testId, result, additional)
+        return tuple(testId,self.b5_descp(),tuple(result,additional))
+
+    def b7_descp(self):
+        return "This test makes sure that compileSdkVersion is modified with " \
+               "precaution and the app is fully tested against behavioral changes " \
+               "with the new api version"
 
     def b7(self):
         """
@@ -106,7 +133,11 @@ class ChecklistYigit(object):
         result = "SUCCEED."
         additional = "Project compileSdkVersion is " + compile_sdk + ". Check for behavioral changes accordingly"
 
-        self.showResult(testId, result, additional)
+        return tuple(testId,self.b7_descp(),tuple(result,additional))
+
+    def b8_descp(self):
+        return "This test makes sure that each dependency injected has a specific " \
+               "version specified"
 
     def b8(self):
         """
@@ -122,13 +153,16 @@ class ChecklistYigit(object):
                 is_valid = False
                 result = "CONFIRM: Please check the latest version of " + dependency[1:-1]
         if is_valid:
-            result += "\n==\tSUCCEED."
+            result += "SUCCEED."
             additional = "Every dependency injected has a specific version"
         else:
             result += "\nFAILED."
             additional = "Test failed."
 
-        self.showResult(testId, result, additional)
+        return tuple(testId,self.b8_descp(),tuple(result,additional))
+
+    def man1_descp(self):
+        return "This test returns the current version code for "
 
     def man1(self):
         """
@@ -139,8 +173,11 @@ class ChecklistYigit(object):
         versionCode = self.gradle['android']['defaultConfig'][0]['versionCode'][0][0]
         result = "CONFIRM:"
         additional = "Current version code is " + versionCode
+        return tuple(testId,self.man1_descp(),tuple(result,additional))
 
-        self.showResult(testId, result, additional)
+    def man3_descp(self):
+        return "This test makes sure that android:versionName follows <major>." \
+               "<minor>.<patch>.<buildNumber> convention."
 
     def man3(self):
         """
@@ -155,7 +192,11 @@ class ChecklistYigit(object):
         else:
             result = "SUCCEED."
             additional = "Version name is valid"
-        self.showResult(testId, result, additional)
+        return tuple(testId,self.man3_descp(),tuple(result,additional))
+
+    def sign4_descp(self):
+        return "This test makes sure that storePassword, keyAlias, " \
+               "keyPassword are set in the build.gradle file for release signing config."
 
     def sign4(self):
         """
@@ -169,20 +210,28 @@ class ChecklistYigit(object):
             num_configs = len(config_values.keys())
             isValid = True
             if (num_configs < 4):
-                result = "FAILED. all values for the signingConfig are not defined.\n Defined are below:\n"
+                result = "FAILED."
+                additional = "all values for the signingConfig are not defined.\n Defined are below:\n"
                 for key in config_values.keys():
-                    result = result + "==\tthe key name is" + key + "and its value is" + config_values[key][0][1:-1]
+                    additional = additional + "\nthe key name is" + key + "and its value is" + config_values[key][0][1:-1]
                 return
             for check in config_values.keys():
                 if (len(config_values[check]) == 0):
-                    result = result + "\n==\tCheck " + check + " value"
+                    result = result + "\nCheck " + check + " value"
                     isValid = False
             if (isValid):
-                result = "SUCCEED. All signingConfig values are valid"
+                result = "SUCCEED. "
+                additional = "All signingConfig values are valid"
         else:
-            result = "FAILED. There is no config value in signingConfigs tag in your project."
+            result = "FAILED. "
+            additional = "There is no config value in signingConfigs tag in your project."
 
-        self.showResult(testId, result, "")
+        return tuple(testId,self.sign4_descp(),tuple(result,additional))
+
+    def perm3_descp(self):
+        return "This test makes sure to set android:required to false for hardware features e.g. " \
+               "<uses-feature android:name=\"android.hardware.telephony\" android:required=\"true\"" \
+               " /> will prevent Play Store to list the app to wifi only devices"
 
     def perm3(self):
         """
@@ -213,7 +262,13 @@ class ChecklistYigit(object):
             result = "CONFIRM:"
             additional = "There is no uses-feature tag in this AndroidManifest.xml"
 
-        self.showResult(testId, result, additional)
+        return tuple(testId,self.perm3_descp(),tuple(result,additional))
+
+    def prg3_descp(self):
+        return "This test makes sure that default files like proguard-android.txt, " \
+               "proguard-rules.pro is not in the project and project specific proguard " \
+               "configurations files are added through proguardFiles property in the " \
+               "release build type"
 
     def prg3(self, proguard_list):
         """
@@ -231,17 +286,20 @@ class ChecklistYigit(object):
         for file in proguard_files:
             if file in proguard_list_filtered:
                 isValid = False
-                result = result + "==\tWARNING: " + file + " is added to the build.gradle\n"
+                additional = additional + "WARNING: " + file + " is added to the build.gradle\n"
         if isValid:
-            result += "==\tSUCCEED.\n"
+            result += "SUCCEED."
         else:
-            result += "==\tFAILED.\n"
+            result += "FAILED."
 
-        result += "==\tAdded proguard files listed below:"
+        additional += "Added proguard files listed below:\n"
         for i in range(len(proguard_files)):
-            result = result + "\n==\t{0}-) {1}".format(str(i + 1), proguard_files[i]) + ""
+            additional = additional + "{0}-) {1}".format(str(i + 1), proguard_files[i]) + "\n"
 
-        self.showResult(testId, result, additional)
+        return tuple(testId,self.prg3_descp(),tuple(result,additional))
+
+    def apk2_descp(self):
+        return "This test makes sure that the apk size for prod-release doesn't exceed 15 MB"
 
     def apk2(self):
         """
@@ -261,7 +319,15 @@ class ChecklistYigit(object):
             result = "FAILED."
             additional = "Apk size exceeds limits (>15mb)."
 
-        self.showResult(testId, result, additional)
+        return tuple(testId,self.apk2_descp(),tuple(result,additional))
+
+    def sec4_descp(self):
+        return "This test makes sure to set android:exported to false for services, " \
+               "activities and broadcast receivers containing intent filters in order " \
+               "to prevent other apps' components access if an activity doesn't have any " \
+               "intent filter, android:exported is false by default; true otherwise, hence " \
+               "it should be set to false explicitly in this case if any access from any other " \
+               "application component is not expected or wanted."
 
     def sec4(self):
         """
@@ -293,11 +359,11 @@ class ChecklistYigit(object):
                             pass
                         else:
                             isValid = False
-                            result = result + "==\tCONFIRM: " + check[
+                            additional = additional + "CONFIRM: " + check[
                                 '@android:name'] + "\t--> android:exported value should be set to false\n"
                     else:
                         isValid = False
-                        result = result + "==\tCONFIRM: " + check[
+                        radditional = additional + "CONFIRM: " + check[
                             '@android:name'] + "\t--> Please add android:exported=\"false\" attribute\n"
         if (service_exist):
             for check in services:
@@ -307,11 +373,11 @@ class ChecklistYigit(object):
                             pass
                         else:
                             isValid = False
-                            result = result + "==\tCONFIRM: " + check[
+                            additional = additional + "CONFIRM: " + check[
                                 '@android:name'] + "\t--> android:exported value should be set to false\n"
                     else:
                         isValid = False
-                        result = result + "==\tCONFIRM: " + check[
+                        additional = additional + "CONFIRM: " + check[
                             '@android:name'] + "\t--> Please add android:exported=\"false\" attribute\n"
         if (receiver_exist):
             for check in receivers:
@@ -321,19 +387,22 @@ class ChecklistYigit(object):
                             pass
                         else:
                             isValid = False
-                            result = result + "==\tCONFIRM: " + check[
+                            additional = additional + "CONFIRM: " + check[
                                 '@android:name'] + "\t--> android:exported value should be set to false\n"
                     else:
                         isValid = False
-                        result = result + "==\tCONFIRM: " + check[
+                        additional = additional + "CONFIRM: " + check[
                             '@android:name'] + "\t--> Please add android:exported=\"false\" attribute\n"
 
         if (isValid):
-            result = result + "==\tSUCCEED."
+            result = "SUCCEED."
         else:
-            result = result + "==\tFAILED."
+            result = "FAILED."
 
-        self.showResult(testId, result, "")
+        return tuple(testId,self.sec4_descp(),tuple(result,additional))
+
+    def gen2_descp(self):
+        return "This test makes sure that basic functionality of the app is fully working "
 
     def gen2(self):
         """
@@ -373,14 +442,18 @@ class ChecklistYigit(object):
         if(success_rate != "100%"):
             result = "FAILED."
             additional = "Success rate is : "+success_rate +". "+ failures + " of "+ tests +" tests have failed. Please check :" + \
-            "\n==\t " + self.project_dir+report_location + "/index.html for more information."
-            self.showResult(testId,result,additional)
+            "\n" + self.project_dir+report_location + "/index.html for more information."
         else:
             result = "SUCCEED."
             additional = "Success rate is : "+success_rate +". All of your tests have succeed. Please check :" + \
-            "\n==\t " + self.project_dir + report_location + "/index.html for more information."
-            self.showResult(testId, result, additional)
+            "\n" + self.project_dir + report_location + "/index.html for more information."
+        return tuple(testId,self.gen2_descp(),tuple(result,additional))
 
+
+    def gen4_descp(self):
+        return "Make sure to run following command to get brief information about the apk. " \
+               "\"aapt d badging app/build/outputs/apk/app-prod-release.apk\" .Verify permissions, " \
+               "locales and densities supported."
 
     def gen4(self, apk_location, sdk_location):
         """
@@ -452,7 +525,12 @@ class ChecklistYigit(object):
             additional = "Your locale definitions are inconsistent. Check your Project"
             res_add.append((result, additional))
 
-        self.showResults(testId, res_add)
+        return tuple(testId,self.gen4_descp(),res_add)
+
+    def man4_descp(self):
+        return "This test checks If MmP is requested instead of MmPb, make sure to hide " \
+               "build number on android:VersionName attribute for prod-release config by " \
+               "setting -PhideBuildNumber gradle parameter on jenkins job configuration."
 
     def man4(self):
         """
@@ -467,17 +545,19 @@ class ChecklistYigit(object):
         except:
             result = "FAILED."
             additional = "There is no defined android:VersionName in the AndroidManifest file"
-            self.showResult(testId, result, additional)
+            return tuple(testId,self.man4_descp(),tuple(result,additional))
         if len(version_name) != 0:
             version_coded = version_name.split(".")
             if len(version_coded) == 3:
                 result = "SUCCEED."
                 additional = "Version naming is correct"
-                self.showResult(testId, result, additional)
             else:
                 result = "FAILED."
                 additional = "Please check your version name in the AndroidManifest file"
-                self.showResult(testId, result, additional)
+            return tuple(testId,self.man4_descp(),tuple(result,additional))
+
+    def sign2_descp(self):
+        return "This test makes sure that the release keystore is included in source control."
 
     def sign2(self):
         """
@@ -491,16 +571,14 @@ class ChecklistYigit(object):
         except:
             result = "FAILED."
             additional = "There is no given path for Release Keystore file"
-            self.showResult(testId, result, additional)
-            return
+            return tuple(testId,self.sign2_descp(),tuple(result,additional))
         if path.exists(keystore_path):
             result = "SUCCEED."
             additional = "Keystore file is included in source Control."
-            self.showResult(testId, result, additional)
         else:
             result = "FAILED."
             additional = "Keystore file isn't included in source Control"
-            self.showResult(testId, result, additional)
+        return tuple(testId, self.sign2_descp(), tuple(result, additional))
 
     def cq1(self):
         """
@@ -509,6 +587,10 @@ class ChecklistYigit(object):
         """
         print "This test will not be implemented."
         testId = "CQ1"
+
+    def apk1_descp(self):
+        return "Make sure that the apk available on dist.pozitron.com follows " \
+               "<app-name>-<flavor>-<buildType>-<versionName>.apk name format"
 
     def apk1(self, apk_folder):
         """
@@ -523,8 +605,7 @@ class ChecklistYigit(object):
         except:
             result = "FAILED."
             additional = "There is no monitise section in gradle file"
-            self.showResult(testId, result, additional)
-            return
+            return tuple(testId, self.apk1_descp(), tuple(result, additional))
         flavors = self.gradle['android']['productFlavors'][0].keys()
         version_name = '1.2.3'
         try:
@@ -532,15 +613,14 @@ class ChecklistYigit(object):
         except:
             result = "FAILED."
             additional = "There is no defined android:VersionName in the AndroidManifest file"
-            self.showResult(testId, result, additional)
-            return
+            return tuple(testId, self.apk1_descp(), tuple(result, additional))
         build_types = self.gradle['android']['buildTypes'][0].keys()
         # name combinations
         apk_results = []
         if (len(flavors) == 0 or len(build_types) == 0 or version_name == ''):
             result = "FAILED."
             additional = "Check flavors, build types and version name declarations"
-            self.showResult(testId, result, additional)
+            return tuple(testId,self.apk1_descp(),tuple(result,additional))
         else:
             for app in apk_names:
                 check_app = app.split("-")
@@ -570,4 +650,4 @@ class ChecklistYigit(object):
                     else:
                         result = "FAILED."
                         apk_results.append((result, additional))
-            self.showResults(testId, apk_results)
+            return tuple(testId, self.apk1_descp(), apk_results)
