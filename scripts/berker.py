@@ -25,7 +25,7 @@ class ChecklistBerker(object):
         print "=="
         print "==================================================================\n"
 
-    def B1(self, configResConfig_list):
+    def b1(self, configResConfig_list):
         testId = "B1"
         found = False
         resConf_filtered = configResConfig_list.split(",")
@@ -67,7 +67,7 @@ class ChecklistBerker(object):
         additional = " Your resConfigs in config file match with the ones in the manifest."
         self.showResult(testId, result, additional)
 
-    def B4(self):
+    def b4(self):
         testId = "B4"
         appId = self.apkf.get_package()
         startingName = "com.monitise.mea."
@@ -79,7 +79,7 @@ class ChecklistBerker(object):
             additional = "Your project name does not start with \"com.monitise.mea\" It starts with " + appId
         self.showResult(testId, result, additional)
 
-    def B6(self, configTargetSdk):
+    def b6(self, configTargetSdk):
         testId = "B6"
         configTargetSdk
         targetSDK = self.apkf.get_target_sdk_version()
@@ -92,7 +92,7 @@ class ChecklistBerker(object):
 
         self.showResult(testId, result, additional)
 
-    def B7(self):
+    def b7(self):
         testId = "B7 Test"
         for dep in self.gradleDict["dependencies"]["compile"]:
             if "com.google.android.gms:play-services:" in dep:
@@ -104,7 +104,7 @@ class ChecklistBerker(object):
         additional = "Google Play Services API is not included with just one line. (or not included at all)"
         self.showResult(testId, result, additional)
 
-    def B9(self):
+    def b9(self):
         testId = "B9"
         if '@android:debuggable' in self.manifestDict['manifest']['application']:
             deb = self.manifestDict['manifest']['application']['@android:debuggable']
@@ -118,7 +118,7 @@ class ChecklistBerker(object):
         additional = "debuggable is not set to true."
         self.showResult(testId, result, additional)
 
-    def MAN2(self):
+    def man2(self):
         testId = "MAN2"
 
         if "@android:versionName" in self.manifestDict['manifest']:
@@ -131,7 +131,7 @@ class ChecklistBerker(object):
 
         self.showResult(testId, result, additional)
 
-    def MAN5(self):
+    def man5(self):
         testId = "MAN5"
 
         if "@android:installLocation" in self.manifestDict['manifest']:
@@ -145,7 +145,7 @@ class ChecklistBerker(object):
         additional = " android:installLocation is not set to externalOnly."
         self.showResult(testId, result, additional)
 
-    def PERM2(self):
+    def perm2(self):
         testId = "PERM2"
 
         result = "CONFIRM:"
@@ -156,7 +156,7 @@ class ChecklistBerker(object):
             counter += 1
         self.showResult(testId, result, additional)
 
-    def SEC1(self, configAllowBackup):
+    def sec1(self, configAllowBackup):
         testId = "SEC1"
         configAllowBackup = configAllowBackup.lower()
 
@@ -178,7 +178,7 @@ class ChecklistBerker(object):
             additional = "Your android:allowBackup is set to false by default."
         self.showResult(testId, result, additional)
 
-    def SIGN1(self):
+    def sign1(self):
         testId = "SIGN1"
 
         if not os.path.exists(self.project_dir + "/release.keystore.jks"):
@@ -204,7 +204,7 @@ class ChecklistBerker(object):
             additional = "Please check assigned keys"
         self.showResult(testId, result, additional)
 
-    def SIGN3(self):
+    def sign3(self):
         testId = "SIGN3"
         keyPath = ''
 
@@ -231,7 +231,7 @@ class ChecklistBerker(object):
             self.showResult(testId, result, additional)
 
 
-    def PRG1(self, proguard_list):
+    def prg1(self, proguard_list):
         # prgList = [line.strip() for line in open(self.project_dir+"/app/proguard-rules.pro", "r")]
         testId = "PRG1"
         functs = ["public static boolean isLoggable(java.lang.String, int);",
@@ -269,7 +269,7 @@ class ChecklistBerker(object):
         additional = "You forgot to disable logging in proguard configurations."
         self.showResult(testId,result,additional)
 
-    def PRG2(self, configMinifyEn, configShrinkRes):
+    def prg2(self, configMinifyEn, configShrinkRes):
         testId = "PRG2"
         configMinifyEn = configMinifyEn.lower()
         configShrinkRes = configShrinkRes.lower()
