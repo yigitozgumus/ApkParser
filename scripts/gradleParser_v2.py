@@ -1,4 +1,4 @@
-#!/usr/bin/env pyth
+#!/usr/bin/env python
 
 from checkUtil import working_directory
 from collections import defaultdict
