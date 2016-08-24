@@ -19,7 +19,7 @@ class ChecklistYigit(object):
         project_dir : Project directory of the Android app
     """
     is_apk_created = False
-    apk_location = "/app/build/outputs/apk/app-release.apk"
+    apk_location = "/app/build/outputs/apk/app-external-release.apk"
 
     def __init__(self, project_dir, apk_dir):
         self.project_dir = project_dir
@@ -401,7 +401,7 @@ class ChecklistYigit(object):
         densities_supported = map(lambda x: x.strip("'"), densitiy_info[0].split(" ")[1:])
 
         any_density = [x for x in list if "supports-any-density" in x]
-        locales = [x for x in list if "locales"]
+        locales = [x for x in list if "locales" in x]
         locales_supported = map(lambda x: x.strip("'"), locales[0].split(" ")[1:])
         try:
             locales_gradle = self.gradle['android']['defaultConfig'][0]['resConfigs'][0]
