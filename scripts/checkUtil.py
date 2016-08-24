@@ -18,18 +18,32 @@ def working_directory(directory):
         os.chdir(owd)
 
 
-def extractXML(project_dir, apk_location):
+# def extractXML(project_dir, apk_location):
+#     """
+#     Parses AndroidManifest file and returns a dictionary object
+#     :param project_dir: Project Location
+#     :param apk_location: Apk location
+#     :return: Parsed AndroidManifest Dictionary
+#     """
+#     with working_directory(project_dir):
+#         subprocess.check_output(["./gradlew", "assembleRelease"])
+#     with working_directory("/tmp"):
+#         subprocess.call(["apktool", "d", apk_location])
+#     with working_directory("/tmp" + "/app-release/"):
+#         with open("AndroidManifest.xml") as fd:
+#             obj_file = xmltodict.parse(fd.read())
+#             return ast.literal_eval(json.dumps(obj_file))
+
+def extractXML(project_dir,apk_location):
     """
-    Parses AndroidManifest file and returns a dictionary object
-    :param project_dir: Project Location
-    :param apk_location: Apk location
-    :return: Parsed AndroidManifest Dictionary
+
+    @param project_dir:
+    @param apk_location:
+    @return:
     """
-    with working_directory(project_dir):
-        subprocess.check_output(["./gradlew", "assembleRelease"])
     with working_directory("/tmp"):
         subprocess.call(["apktool", "d", apk_location])
-    with working_directory("/tmp" + "/app-release/"):
+    with working_directory(project_dir + "/app/src/main"):
         with open("AndroidManifest.xml") as fd:
             obj_file = xmltodict.parse(fd.read())
             return ast.literal_eval(json.dumps(obj_file))

@@ -17,7 +17,7 @@ def main():
     if args.tasks :
         tasks = args.tasks
         print tasks
-    apk_extension= "/app/build/outputs/apk/app-external-release.apk"
+    apk_extension= "/app/app-external-release.apk"
     try:
         check_output(["apktool"])
     except:

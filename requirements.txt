@@ -2,3 +2,4 @@ m2crypto
 untangle
 xmltodict
 beautifulsoup4
+ConfigParser
