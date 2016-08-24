@@ -230,43 +230,15 @@ class ChecklistBerker(object):
             additional = " There is no release keystore in the project!"
             self.showResult(testId, result, additional)
 
-
-    def prg1(self, proguard_list):
-        # prgList = [line.strip() for line in open(self.project_dir+"/app/proguard-rules.pro", "r")]
+    def prg1(self):
         testId = "PRG1"
-        functs = ["public static boolean isLoggable(java.lang.String, int);",
-                  "public static int v(...);",
-                  "public static int i(...);",
-                  "public static int w(...);",
-                  "public static int d(...);",
-                  "public static int e(...);"]
+        if 'monitise' in self.gradleDict:
+            result = "SUCCEED!"
+            additional = "Your gradle has \"monitise\" block."
+        else:
+            result = "FAILED!"
+            additional = "Your gradle file does not have \"monitise\" block.  You forgot deleting logs."
 
-        gradlePrgList = self.gradleDict["android"]["buildTypes"][0]["release"][0]["proguardFiles"][0]
-
-        for fileIndex in range(len(gradlePrgList)):
-
-            if not os.path.exists(self.project_dir + "/app/" + gradlePrgList[fileIndex]):
-                continue
-
-            prgList = [line.strip() for line in open(self.project_dir + "/app/" + gradlePrgList[fileIndex], "r")]
-            prgList = [x.strip(" ") for x in prgList]
-            for i in range(len(prgList)):
-                if prgList[i].startswith("-assumenosideeffects class android.util.Log {"):
-                    i += 1
-                    for k in range(len(functs)):
-                        if not i + k < len(prgList):
-                            break
-                        if not prgList[i + k].startswith(functs[k]):
-                            break
-                        if k == len(functs) - 1:
-                            result = "SUCCEED"
-                            additional = "You have proper functions to disable logging in " + gradlePrgList[
-                                fileIndex] + "."
-                            self.showResult(testId,result,additional)
-                            return
-
-        result = "FAILED!"
-        additional = "You forgot to disable logging in proguard configurations."
         self.showResult(testId,result,additional)
 
     def prg2(self, configMinifyEn, configShrinkRes):
