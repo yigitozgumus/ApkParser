@@ -258,8 +258,8 @@ class ChecklistYigit(object):
                             result = "FAILED."
                             additional = "Please change " + feature['@android:name'] + " requirement to False"
             if isValid:
-                result = "SUCCESS."
-                additional = "Test is successful"
+                result = "SUCCEED."
+                additional = "android:required attributes is false for all hardware features."
         else:
             result = "CONFIRM:"
             additional = "There is no uses-feature tag in this AndroidManifest.xml"

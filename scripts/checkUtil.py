@@ -43,7 +43,7 @@ def extractXML(project_dir,apk_location):
     """
     with working_directory("/tmp"):
         subprocess.call(["apktool", "d", apk_location])
-    with working_directory(project_dir + "/app/src/main"):
+    with working_directory("/tmp" + "/app-external-release"):
         with open("AndroidManifest.xml") as fd:
             obj_file = xmltodict.parse(fd.read())
             return ast.literal_eval(json.dumps(obj_file))

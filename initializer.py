@@ -17,12 +17,12 @@ def main():
     if args.tasks :
         tasks = args.tasks
         print tasks
-    apk_extension= "/app/app-external-release.apk"
+    apk_location = args.apk
     try:
         check_output(["apktool"])
     except:
         apktool_loading()
-    tester = cl.Checklist(project,project+apk_extension)
+    tester = cl.Checklist(project,apk_location)
     tester.executeTests(config)
 
     with working_directory("/tmp"):
@@ -63,6 +63,9 @@ def parse_parameters(argv):
     parser.add_argument('-c', '--config',
                         nargs='?',
                         help='Config File Location')
+    parser.add_argument('-a', '--apk',
+                        nargs='?',
+                        help='Apk Location')
     parser.add_argument('-t','--tasks',
                         nargs=1,
                         help='Optional task file to import check functions')
