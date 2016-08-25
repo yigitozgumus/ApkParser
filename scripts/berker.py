@@ -1,14 +1,16 @@
 import os
 import os.path as path
-
-import subprocess
-
+import ConfigParser
 import gradleParser_v2 as gr
 from apk_parse.apk import APK
 from checkUtil import extractXML, working_directory
 
 
 class ChecklistBerker(object):
+    is_apk_created = False
+    apk_location = "/app/build/outputs/apk/app-external-release.apk"
+    test_results = []
+
     def __init__(self, project_dir, apk_dir):
         self.project_dir = project_dir
 
@@ -18,12 +20,30 @@ class ChecklistBerker(object):
         self.manifestDict = extractXML(project_dir, apk_dir)
         self.gradleDict = gr.GradleParserNew(self.project_dir + "/app").parse(False)
 
-    def showResult(self, testId, result, additional):
-        print "\n\n============ " + testId + " Test ==========================================="
-        print "=="
-        print "==\t" + result + additional
-        print "=="
-        print "==================================================================\n"
+    def execute_test_batch(self, config_location):
+        config = ConfigParser.ConfigParser()
+        config.read(config_location)
+
+        resCongList = config.get('B1', 'resConfigs')
+        self.test_results.append(self.b1(resCongList))
+        self.test_results.append(self.b4())
+        targetSdkVersion = config.get('B6', 'targetSdkVersion')
+        self.test_results.append(self.b6(targetSdkVersion))
+        self.test_results.append(self.b7())
+        self.test_results.append(self.b9())
+
+        self.test_results.append(self.man2())
+        self.test_results.append(self.man5())
+        self.test_results.append(self.sign1())
+        self.test_results.append(self.sign3())
+        self.test_results.append(self.perm2())
+
+        self.test_results.append(self.prg1())
+        minifyEnabled = config.get('PRG2', 'minifyEnabled')
+        shrinkResources = config.get('PRG2', 'shrinkResources')
+        self.test_results.append(self.prg2(shrinkResources, minifyEnabled))
+        allowBackup = config.get('SEC1', 'allowBackup')
+        self.test_results.append(self.sec1(allowBackup))
 
     def b1(self, configResConfig_list):
         testId = "B1"
@@ -40,8 +60,7 @@ class ChecklistBerker(object):
                 if not found:
                     result = "FAILED!"
                     additional = " In your resConfigs, you have: " + i + " but not in config file."
-                    self.showResult(testId, result, additional)
-                    return
+                    return (testId, self.b1_descp(), (result, additional))
                 else:
                     found = False
 
@@ -53,19 +72,20 @@ class ChecklistBerker(object):
                 if not found:
                     result = "FAILED!"
                     additional = " In your config file, you have: " + conf + " but not in manifest."
-                    self.showResult(testId, result, additional)
-                    return
+                    return (testId, self.b1_descp(), (result, additional))
                 else:
                     found = False
         else:
             result = "CONFIRM:"
             additional = " You dont have resConfigs in your project."
-            self.showResult(testId, result, additional)
-            return
+            return (testId, self.b1_descp(), (result, additional))
 
         result = "SUCCEED!"
         additional = " Your resConfigs in config file match with the ones in the manifest."
-        self.showResult(testId, result, additional)
+        return (testId, self.b1_descp(), (result, additional))
+
+    def b1_descp(self):
+        return "Make sure to minimize res configs by only including necessary resources (localization etc.)"
 
     def b4(self):
         testId = "B4"
@@ -77,7 +97,10 @@ class ChecklistBerker(object):
         else:
             result = "FAILED!"
             additional = "Your project name does not start with \"com.monitise.mea\" It starts with " + appId
-        self.showResult(testId, result, additional)
+        return (testId, self.b4_descp(), (result, additional))
+
+    def b4_descp(self):
+        return "Make sure that applicationId respects com.monitise.mea.<product> convention unless other indicated."
 
     def b6(self, configTargetSdk):
         testId = "B6"
@@ -90,7 +113,10 @@ class ChecklistBerker(object):
             result = "FAILED!"
             additional = "Your targetSdkVersion should be " + configTargetSdk + " but it is " + targetSDK + "."
 
-        self.showResult(testId, result, additional)
+        return (testId, self.b6_descp(), (result, additional))
+
+    def b6_descp(self):
+        return "Make sure that targetSdkVersion is set to most recent api version that app is tested against."
 
     def b7(self):
         testId = "B7 Test"
@@ -98,11 +124,13 @@ class ChecklistBerker(object):
             if "com.google.android.gms:play-services:" in dep:
                 result = "FAILED!"
                 additional = "Google Play Services API should be included as separate dependencies."
-                self.showResult(testId, result, additional)
-                return
+                return (testId, self.b7_descp(), (result, additional))
         result = "SUCCEED!"
         additional = "Google Play Services API is not included with just one line. (or not included at all)"
-        self.showResult(testId, result, additional)
+        return (testId, self.b7_descp(), (result, additional))
+
+    def b7_descp(self):
+        return "Make sure that any Google Play Services API is included as separate dependencies."
 
     def b9(self):
         testId = "B9"
@@ -112,11 +140,13 @@ class ChecklistBerker(object):
             if deb == "true":
                 result = "FAILED!"
                 additional = "debuggable should not be set to true."
-                self.showResult(testId, result, additional)
-                return
+                return (testId, self.b9_descp(), (result, additional))
         result = "SUCCEED!"
         additional = "debuggable is not set to true."
-        self.showResult(testId, result, additional)
+        return (testId, self.b9_descp(), (result, additional))
+
+    def b9_descp(self):
+        return "Make sure that release build type in gradle build file doesn't have debuggable set to true."
 
     def man2(self):
         testId = "MAN2"
@@ -129,7 +159,10 @@ class ChecklistBerker(object):
             result = "FAILED!"
             additional = "You need to update android:versionName."
 
-        self.showResult(testId, result, additional)
+        return (testId, self.man2_descp(), (result, additional))
+
+    def man2_descp(self):
+        return "Make sure that android:versionName attribute is updated."
 
     def man5(self):
         testId = "MAN5"
@@ -139,11 +172,13 @@ class ChecklistBerker(object):
             if location == "externalOnly":
                 result = "FAILED!"
                 additional = "You cannot set android:installLocation to externalOnly."
-                self.showResult(testId, result, additional)
-                return
+                return (testId, self.man5_descp(), (result, additional))
         result = "SUCCEED!"
         additional = " android:installLocation is not set to externalOnly."
-        self.showResult(testId, result, additional)
+        return (testId, self.man5_descp(), (result, additional))
+
+    def man5_descp(self):
+        return "Make sure that android:installLocation attributes is not set to externalOnly."
 
     def perm2(self):
         testId = "PERM2"
@@ -152,9 +187,12 @@ class ChecklistBerker(object):
         additional = "Check if all the permissions are necessary:"
         counter = 0
         for i in self.apkf.get_permissions():
-            additional = additional + "\n==\t- " + self.apkf.get_permissions()[counter]
+            additional = additional + "\n\t- " + self.apkf.get_permissions()[counter]
             counter += 1
-        self.showResult(testId, result, additional)
+        return (testId, self.perm2_descp(), (result, additional))
+
+    def perm2_descp(self):
+        return "Make sure that app is NOT requesting any unnecessary permissions."
 
     def sec1(self, configAllowBackup):
         testId = "SEC1"
@@ -176,7 +214,10 @@ class ChecklistBerker(object):
         else:
             result = "SUCCEED!"
             additional = "Your android:allowBackup is set to false by default."
-        self.showResult(testId, result, additional)
+        return (testId, self.sec1_descp(), (result, additional))
+
+    def sec1_descp(self):
+        return "Make sure to set android:allowBackup to false unless otherwise indicated."
 
     def sign1(self):
         testId = "SIGN1"
@@ -185,24 +226,11 @@ class ChecklistBerker(object):
             result = "FAILED!"
             additional = " release.keystore.jks does not exist in your project path."
             self.showResult(testId, result, additional)
-            return;
+            return (testId, self.sign1_descp(), (result, additional))
 
-            # todo checkb2 here
-        signing_report = []
-        split_string = ":app:signingReport"
-        with working_directory(self.project_dir):
-            output = subprocess.check_output(["./gradlew", "signingReport"])
-            signing_report = output.split("\n")
-        # parse result
-        signing_report = signing_report[signing_report.index(split_string) + 1:]
-        signing_report = [el for el in signing_report if "Error" in el]
-        if len(signing_report) == 0:
-            result = "SUCCEED."
-            additional = "Signing task build is successful, keys are valid"
-        else:
-            result = "FAILED."
-            additional = "Please check assigned keys"
-        self.showResult(testId, result, additional)
+    def sign1_descp(self):
+        return "Make sure that a release keystore is created and used to sign any release configuration " \
+               "(prod-release, internal-release, external-release etc.) of the app"
 
     def sign3(self):
         testId = "SIGN3"
@@ -213,8 +241,7 @@ class ChecklistBerker(object):
         except:
             result = "FAILED!"
             additional = "There is no given path for release keystore file"
-            self.showResult(testId, result, additional)
-            return
+            return (testId, self.sign3_descp(), (result, additional))
 
         if path.exists(keyPath):
             if "/build/" in keyPath:
@@ -224,11 +251,14 @@ class ChecklistBerker(object):
                 result = "SUCCEED!"
                 additional = "Your release keystore is not in build classpath."
 
-            self.showResult(testId, result, additional)
+            return (testId, self.sign3_descp(), (result, additional))
         else:
             result = "FAILED!"
             additional = " There is no release keystore in the project!"
-            self.showResult(testId, result, additional)
+            return (testId, self.sign3_descp(), (result, additional))
+
+    def sign3_descp(self):
+        return "Make sure that the release keystore is NOT included in build classpath i.e. Apk should never expose this file"
 
     def prg1(self):
         testId = "PRG1"
@@ -239,7 +269,10 @@ class ChecklistBerker(object):
             result = "FAILED!"
             additional = "Your gradle file does not have \"monitise\" block.  You forgot deleting logs."
 
-        self.showResult(testId,result,additional)
+        return (testId, self.prg1_descp(), (result, additional))
+
+    def prg1_descp(self):
+        return "Make sure that logging is disabled on release builds."
 
     def prg2(self, configMinifyEn, configShrinkRes):
         testId = "PRG2"
@@ -256,9 +289,11 @@ class ChecklistBerker(object):
             if minifyEnabled == configMinifyEn and shrinkResources == configShrinkRes:
                 result = "SUCCEED!"
                 additional = "minifyEnabled and shrinkResources are set to true."
-                self.showResult(testId, result, additional)
-                return
+                return (testId, self.prg2_descp(), (result, additional))
 
         result = "FAILED!"
         additional = "minifyEnabled and shrinkResources must be true."
-        self.showResult(testId, result, additional)
+        return (testId, self.prg2_descp(), (result, additional))
+
+    def prg2_descp(self):
+        return "Make sure that minifyEnabled and shrinkResoureces are set to true for release build type"
