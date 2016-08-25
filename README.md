@@ -61,3 +61,7 @@ you can call the tests from the initialized object individually.
   proguardList = config.get('PRG3', 'proguardList')
   prg3_result = self.checklist_yigit.prg3(proguardList)
 ```
+
+### Result report
+
+Script creates the result report as a directory. You can set the location of the report directory from the __[OUTPUT]__ section of the configuration file.
