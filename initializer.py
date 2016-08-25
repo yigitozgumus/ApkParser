@@ -24,8 +24,9 @@ def main():
         apktool_loading()
     tester = cl.Checklist(project,project+apk_extension)
     tester.executeTests(config)
+
     with working_directory("/tmp"):
-        check_output(["rm","-rf","/app-release"])
+        check_output(["rm","-rf","/app-external-release"])
 
 
 

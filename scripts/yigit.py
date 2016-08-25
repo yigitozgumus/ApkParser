@@ -52,7 +52,7 @@ class ChecklistYigit(object):
         self.test_results.append(self.gen4(apk_location,sdk_location))
         self.test_results.append(self.man4())
         self.test_results.append(self.sign2())
-        apk_folder_location = self.config.get('APK1', 'apkFolderLocation')
+        apk_folder_location = config.get('APK1', 'apkFolderLocation')
         self.test_results.append(self.apk1(apk_folder_location))
         return self.test_results
 
@@ -127,7 +127,7 @@ class ChecklistYigit(object):
         """
         :return:
         """
-        testId = "B7 Test"
+        testId = "B7"
         # TODO ask the checklist item
         # if (not self.is_apk_created):
         #     self.create_apk()
@@ -225,7 +225,7 @@ class ChecklistYigit(object):
                 result = "SUCCEED. "
                 additional = "All signingConfig values are valid"
         else:
-            result = "FAILED. "
+            result = "FAILED."
             additional = "There is no config value in signingConfigs tag in your project."
 
         return (testId,self.sign4_descp(),(result,additional))
@@ -278,7 +278,7 @@ class ChecklistYigit(object):
         """
         # todo change print version
         testId = "PRG3"
-        result = "\n"
+        result = ""
         additional = ""
         proguard_files = self.gradle["android"]["buildTypes"][0]["release"][0]["proguardFiles"][0]
         proguard_list_filtered = proguard_list.split(",")
@@ -290,9 +290,9 @@ class ChecklistYigit(object):
                 isValid = False
                 additional = additional + "WARNING: " + file + " is added to the build.gradle\n"
         if isValid:
-            result += "SUCCEED."
+            result = "SUCCEED."
         else:
-            result += "FAILED."
+            result = "FAILED."
 
         additional += "Added proguard files listed below:\n"
         for i in range(len(proguard_files)):

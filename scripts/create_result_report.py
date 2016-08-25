@@ -19,10 +19,74 @@ class CreateReport(object):
                               "<body>\n"
         self.closing_string = " </body>\n" \
                               "</html>\n"
-    def generate_report(self):
+
+    def generate_report(self,title,description):
         #open a file
         with working_directory(self.output_dir):
             file = open("report.html","w")
         file.write(self.opening_string)
-        # http://www.w3schools.com/bootstrap/tryit.asp?filename=trybs_ref_table-responsive&stacked=h
+        table_setup = "<div class=\"container\">\n" \
+                      "<h2>" + title +"</h2>\n" \
+                      "<p>" + description +"</p>\n" \
+                      "<div class=\"table\" >\n" \
+                      "<table class=\"table\" border=\"5px\">\n" \
+                      "<thead>\n" \
+                      "<tr>\n" \
+                      "<th>Test Id</th>\n" \
+                      "<th>Description</th>\n" \
+                      "<th>Result</th>\n" \
+                      "<th>Additional Information</th>\n" \
+                      "</tr>\n" \
+                      "</thead>\n"
+        file.write(table_setup)
+        file.write("<tbody>\n")
+        for elements in self.test_results:
+            if type(elements[2]) == list:
+                is_succeed = False
+                is_failed=False
+                for element in elements[2]:
+                    if element[0] == "SUCCEED.":
+                        is_succeed = True
+                    elif element[0] == "FAILED.":
+                        is_failed = True
+                if(is_succeed and not(is_failed)):
+                    file.write("<tr class=\"success\">")
+                elif(is_succeed and is_failed):
+                    file.write("<tr class=\"warning\">")
+                elif(not(is_succeed) and is_failed):
+                    file.write("<tr class=\"danger\">")
+            elif "FAILED." in elements[2]:
+                file.write("<tr class=\"danger\">")
+            elif "CONFIRM:" in elements[2]:
+                file.write("<tr class=\"info\">")
+            elif "SUCCEED." in elements[2]:
+                file.write("<tr class=\"success\">")
+            for index in range(len(elements)):
+                if type(elements[index]) == str:
+                    file.write("<td>")
+                    if index == 0:
+                        file.write("<b>" +elements[index]+ "</b>")
+                    else:
+                        file.write(elements[index])
+                    file.write("</td>")
+                elif type(elements[index]) == tuple:
+                    file.write("<td>")
+                    file.write(elements[index][0])
+                    file.write("</td>")
+                    file.write("<td>")
+                    file.write(elements[index][1])
+                    file.write("</td>")
+                elif type(elements[index]) == list:
+                    file.write("<td>")
+                    for sub_sub in elements[index]:
+                        file.write(sub_sub[0] + "\n")
+                    file.write("</td>")
+                    file.write("<td>")
+                    for sub_sub in elements[index]:
+                        file.write(sub_sub[1]+"\n")
+                    file.write("</td>")
+            file.write("</tr>")
+        file.write("</tbody>\n</table>\n</div>\n</div>")
         file.write(self.closing_string)
+        file.close()
+

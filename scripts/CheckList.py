@@ -2,9 +2,8 @@
 
 import yigit
 import berker
-import checkUtil
-import gradleParser_v2
 import ConfigParser
+import create_result_report
 
 
 class Checklist(object):
@@ -15,13 +14,15 @@ class Checklist(object):
         self.checklist_berker = berker.ChecklistBerker(self.project_dir, self.apk_dir)
 
     def executeTests(self,config_location):
-        # config = ConfigParser.ConfigParser()
-        #
-        # config.read(config_location)
+        config = ConfigParser.ConfigParser()
+        config.read(config_location)
+        result_loc = config.get("OUTPUT","outputLocation")
 
         test_results = self.checklist_yigit.execute_test_batch(config_location)
         for i in test_results:
             print i
+        results = create_result_report.CreateReport(test_results,result_loc)
+        results.generate_report("Checklist Tests","deneme")
 
         # self.checklist_berker.b4()
         # targetSdkVersion = config.get('B6', 'targetSdkVersion')
