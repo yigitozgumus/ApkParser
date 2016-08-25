@@ -44,6 +44,7 @@ class ChecklistBerker(object):
         self.test_results.append(self.prg2(shrinkResources, minifyEnabled))
         allowBackup = config.get('SEC1', 'allowBackup')
         self.test_results.append(self.sec1(allowBackup))
+        return self.test_results
 
     def b1(self, configResConfig_list):
         testId = "B1"
@@ -58,7 +59,7 @@ class ChecklistBerker(object):
                         found = True
                         break  # found in the config
                 if not found:
-                    result = "FAILED!"
+                    result = "FAILED."
                     additional = " In your resConfigs, you have: " + i + " but not in config file."
                     return (testId, self.b1_descp(), (result, additional))
                 else:
@@ -70,7 +71,7 @@ class ChecklistBerker(object):
                         found = True
                         break  # found in the config
                 if not found:
-                    result = "FAILED!"
+                    result = "FAILED."
                     additional = " In your config file, you have: " + conf + " but not in manifest."
                     return (testId, self.b1_descp(), (result, additional))
                 else:
@@ -80,7 +81,7 @@ class ChecklistBerker(object):
             additional = " You dont have resConfigs in your project."
             return (testId, self.b1_descp(), (result, additional))
 
-        result = "SUCCEED!"
+        result = "SUCCEED."
         additional = " Your resConfigs in config file match with the ones in the manifest."
         return (testId, self.b1_descp(), (result, additional))
 
@@ -92,10 +93,10 @@ class ChecklistBerker(object):
         appId = self.apkf.get_package()
         startingName = "com.monitise.mea."
         if appId.startswith(startingName):
-            result = "SUCCEED!"
+            result = "SUCCEED."
             additional = "Your project name starts with \"com.monitise.mea\"."
         else:
-            result = "FAILED!"
+            result = "FAILED."
             additional = "Your project name does not start with \"com.monitise.mea\" It starts with " + appId
         return (testId, self.b4_descp(), (result, additional))
 
@@ -107,10 +108,10 @@ class ChecklistBerker(object):
         configTargetSdk
         targetSDK = self.apkf.get_target_sdk_version()
         if configTargetSdk == targetSDK:
-            result = "SUCCESS!"
+            result = "SUCCEED."
             additional = "Your targetSdkVersion is: " + targetSDK + "."
         else:
-            result = "FAILED!"
+            result = "FAILED."
             additional = "Your targetSdkVersion should be " + configTargetSdk + " but it is " + targetSDK + "."
 
         return (testId, self.b6_descp(), (result, additional))
@@ -122,10 +123,10 @@ class ChecklistBerker(object):
         testId = "B7 Test"
         for dep in self.gradleDict["dependencies"]["compile"]:
             if "com.google.android.gms:play-services:" in dep:
-                result = "FAILED!"
+                result = "FAILED."
                 additional = "Google Play Services API should be included as separate dependencies."
                 return (testId, self.b7_descp(), (result, additional))
-        result = "SUCCEED!"
+        result = "SUCCEED."
         additional = "Google Play Services API is not included with just one line. (or not included at all)"
         return (testId, self.b7_descp(), (result, additional))
 
@@ -138,10 +139,10 @@ class ChecklistBerker(object):
             deb = self.manifestDict['manifest']['application']['@android:debuggable']
             deb = deb.lower()
             if deb == "true":
-                result = "FAILED!"
+                result = "FAILED."
                 additional = "debuggable should not be set to true."
                 return (testId, self.b9_descp(), (result, additional))
-        result = "SUCCEED!"
+        result = "SUCCEED."
         additional = "debuggable is not set to true."
         return (testId, self.b9_descp(), (result, additional))
 
@@ -156,7 +157,7 @@ class ChecklistBerker(object):
             result = "CONFIRM:"
             additional = "Dismiss if you updated your version. android:versionName is set to: " + version + "."
         else:
-            result = "FAILED!"
+            result = "FAILED."
             additional = "You need to update android:versionName."
 
         return (testId, self.man2_descp(), (result, additional))
@@ -170,10 +171,10 @@ class ChecklistBerker(object):
         if "@android:installLocation" in self.manifestDict['manifest']:
             location = self.manifestDict['manifest']['@android:installLocation']
             if location == "externalOnly":
-                result = "FAILED!"
+                result = "FAILED."
                 additional = "You cannot set android:installLocation to externalOnly."
                 return (testId, self.man5_descp(), (result, additional))
-        result = "SUCCEED!"
+        result = "SUCCEED."
         additional = " android:installLocation is not set to externalOnly."
         return (testId, self.man5_descp(), (result, additional))
 
@@ -203,16 +204,16 @@ class ChecklistBerker(object):
             backup = backup.lower()
             configAllowBackup = configAllowBackup.lower()
             if backup == configAllowBackup:
-                result = "SUCCEED!"
+                result = "SUCCEED."
                 additional = "android:allowBackup is set to " + backup
             else:
-                result = "FAILED!"
+                result = "FAILED."
                 additional = "android:allowBackup is set to " + backup + ". But it must be " + configAllowBackup + "."
         elif configAllowBackup == "true":
-            result = "FAILED!"
+            result = "FAILED."
             additional = "You need to specify android:allowBackup as true."
         else:
-            result = "SUCCEED!"
+            result = "SUCCEED."
             additional = "Your android:allowBackup is set to false by default."
         return (testId, self.sec1_descp(), (result, additional))
 
@@ -223,9 +224,8 @@ class ChecklistBerker(object):
         testId = "SIGN1"
 
         if not os.path.exists(self.project_dir + "/release.keystore.jks"):
-            result = "FAILED!"
+            result = "FAILED."
             additional = " release.keystore.jks does not exist in your project path."
-            self.showResult(testId, result, additional)
             return (testId, self.sign1_descp(), (result, additional))
 
     def sign1_descp(self):
@@ -239,7 +239,7 @@ class ChecklistBerker(object):
         try:
             keyPath = self.gradle['android']['signingConfigs'][0]['release'][0]['storeFile'][0][0]
         except:
-            result = "FAILED!"
+            result = "FAILED."
             additional = "There is no given path for release keystore file"
             return (testId, self.sign3_descp(), (result, additional))
 
@@ -248,13 +248,13 @@ class ChecklistBerker(object):
                 result = "FAILED"
                 additional = " Your release keystore is in build classpath."
             else:
-                result = "SUCCEED!"
+                result = "SUCCEED."
                 additional = "Your release keystore is not in build classpath."
 
             return (testId, self.sign3_descp(), (result, additional))
         else:
-            result = "FAILED!"
-            additional = " There is no release keystore in the project!"
+            result = "FAILED."
+            additional = " There is no release keystore in the project."
             return (testId, self.sign3_descp(), (result, additional))
 
     def sign3_descp(self):
@@ -263,10 +263,10 @@ class ChecklistBerker(object):
     def prg1(self):
         testId = "PRG1"
         if 'monitise' in self.gradleDict:
-            result = "SUCCEED!"
+            result = "SUCCEED."
             additional = "Your gradle has \"monitise\" block."
         else:
-            result = "FAILED!"
+            result = "FAILED."
             additional = "Your gradle file does not have \"monitise\" block.  You forgot deleting logs."
 
         return (testId, self.prg1_descp(), (result, additional))
@@ -287,11 +287,11 @@ class ChecklistBerker(object):
             minifyEnabled = minifyEnabled[0].lower()
             shrinkResources = shrinkResources[0].lower()
             if minifyEnabled == configMinifyEn and shrinkResources == configShrinkRes:
-                result = "SUCCEED!"
+                result = "SUCCEED."
                 additional = "minifyEnabled and shrinkResources are set to true."
                 return (testId, self.prg2_descp(), (result, additional))
 
-        result = "FAILED!"
+        result = "FAILED."
         additional = "minifyEnabled and shrinkResources must be true."
         return (testId, self.prg2_descp(), (result, additional))
 

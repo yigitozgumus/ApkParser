@@ -164,7 +164,7 @@ class ChecklistYigit(object):
         return (testId,self.b8_descp(),(result,additional))
 
     def man1_descp(self):
-        return "This test returns the current version code for "
+        return "This test returns the current version code for the project"
 
     def man1(self):
         """
