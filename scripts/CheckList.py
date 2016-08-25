@@ -7,11 +7,11 @@ import create_result_report
 
 
 class Checklist(object):
-    def __init__(self, project_dir, apk_dir):
+    def __init__(self, project_dir, apk_dir,config_location):
         self.project_dir = project_dir
         self.apk_dir = apk_dir
-        self.checklist_yigit = yigit.ChecklistYigit(self.project_dir, self.apk_dir)
-        self.checklist_berker = berker.ChecklistBerker(self.project_dir, self.apk_dir)
+        self.checklist_yigit = yigit.ChecklistYigit(self.project_dir, self.apk_dir,config_location)
+        self.checklist_berker = berker.ChecklistBerker(self.project_dir, self.apk_dir,config_location)
 
     def executeTests(self,config_location):
         config = ConfigParser.ConfigParser()

@@ -22,7 +22,7 @@ def main():
         check_output(["apktool"])
     except:
         apktool_loading()
-    tester = cl.Checklist(project,apk_location)
+    tester = cl.Checklist(project,apk_location,config)
     tester.executeTests(config)
 
     with working_directory("/tmp"):

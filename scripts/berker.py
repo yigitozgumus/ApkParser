@@ -11,13 +11,13 @@ class ChecklistBerker(object):
     apk_location = "/app/build/outputs/apk/app-external-release.apk"
     test_results = []
 
-    def __init__(self, project_dir, apk_dir):
+    def __init__(self, project_dir, apk_dir,config_location):
         self.project_dir = project_dir
 
         self.apk_dir = apk_dir
         self.apkf = APK(apk_dir)
 
-        self.manifestDict = extractXML(project_dir, apk_dir)
+        self.manifestDict = extractXML(apk_dir,config_location)
         self.gradleDict = gr.GradleParserNew(self.project_dir + "/app").parse(False)
 
     def execute_test_batch(self, config_location):

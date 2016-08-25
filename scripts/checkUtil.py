@@ -4,6 +4,7 @@ from contextlib import contextmanager
 import os
 import subprocess
 import xmltodict
+import ConfigParser
 import json, ast
 
 
@@ -34,7 +35,7 @@ def working_directory(directory):
 #             obj_file = xmltodict.parse(fd.read())
 #             return ast.literal_eval(json.dumps(obj_file))
 
-def extractXML(project_dir,apk_location):
+def extractXML(apk_location,config_location):
     """
 
     @param project_dir:
@@ -43,7 +44,13 @@ def extractXML(project_dir,apk_location):
     """
     with working_directory("/tmp"):
         subprocess.call(["apktool", "d", apk_location])
-    with working_directory("/tmp" + "/app-external-release"):
+    config = ConfigParser.ConfigParser()
+    config.read(config_location)
+    app_name = "app-external-release"
+    temp = config.get("APP_NAME","app_flavor_name")
+    if temp != None:
+        app_name = temp
+    with working_directory("/tmp/" + app_name):
         with open("AndroidManifest.xml") as fd:
             obj_file = xmltodict.parse(fd.read())
             return ast.literal_eval(json.dumps(obj_file))

@@ -23,10 +23,10 @@ class ChecklistYigit(object):
     apk_location = "/app/build/outputs/apk/app-external-release.apk"
     test_results = []
 
-    def __init__(self, project_dir, apk_dir):
+    def __init__(self, project_dir, apk_dir,config_location):
         self.project_dir = project_dir
         self.apk_dir = apk_dir
-        self.manifest = extractXML(project_dir, apk_dir)
+        self.manifest = extractXML(apk_dir,config_location)
         self.apkf_inspect = apk.APK(apk_dir)
         self.gradle = gr.GradleParserNew(self.project_dir + "/app").parse(False)
 
@@ -46,7 +46,8 @@ class ChecklistYigit(object):
         self.test_results.append(self.prg3(proguardList))
         self.test_results.append(self.apk2())
         self.test_results.append(self.sec4())
-        self.test_results.append(self.gen2())
+        flavor = config.get('GEN2','flavor')
+        self.test_results.append(self.gen2(flavor))
         sdk_location = config.get('GEN4', 'sdkLocation')
         apk_location = config.get('GEN4', 'apkLocation')
         self.test_results.append(self.gen4(apk_location,sdk_location))
@@ -407,7 +408,7 @@ class ChecklistYigit(object):
     def gen2_descp(self):
         return "This test makes sure that basic functionality of the app is fully working "
 
-    def gen2(self):
+    def gen2(self,flavor):
         """
         Runs all the tests including espressos and prints out the results
         @return:
@@ -431,7 +432,7 @@ class ChecklistYigit(object):
         #Print external Report
         file = 'index.html'
         if(flavor_exist):
-            report_location = '/app/build/reports/androidTests/connected/flavors/EXTERNAL'
+            report_location = '/app/build/reports/androidTests/connected/flavors/'+ flavor
         else:
             report_location = '/app/build/reports/androidTests/connected/'
             file_temp = check_output(["ls"]).split("\n")
